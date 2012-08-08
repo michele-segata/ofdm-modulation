@@ -33,7 +33,7 @@ void scramble_with_initial_state(const char *in, char *out, int size, char initi
     //the bit which is xored with the input bit
     char scrambling_bit;
     //the OFDM scrambler register (state of the scrambler)
-    char shiftRegister = initial_state;
+    char shift_register = initial_state;
 
     for (i = 0; i < size; i++) {
 
@@ -43,14 +43,14 @@ void scramble_with_initial_state(const char *in, char *out, int size, char initi
         for (ib = 7; ib >= 0; ib--) {
 
             //xor 7th bit with 4th bit
-            scrambling_bit = get_bit(shiftRegister, 3) ^ get_bit(shiftRegister, 6);
+            scrambling_bit = get_bit(shift_register, 3) ^ get_bit(shift_register, 6);
             //input bit
             char in_bit = get_bit(in[i], ib);
             //output bit is the xor of input bit and the scrambling bit
             set_bit(&out[i], ib, scrambling_bit ^ in_bit);
 
             //now shift the register left
-            shiftRegister = (shiftRegister << 1) | scrambling_bit;
+            shift_register = (shift_register << 1) | scrambling_bit;
 
         }
 
