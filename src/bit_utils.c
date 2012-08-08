@@ -21,6 +21,8 @@
 
 #include "bit_utils.h"
 
+#include <stdio.h>
+
 void print_bits(char b) {
     int i;
     for (i = 7; i >= 0; i--) {
