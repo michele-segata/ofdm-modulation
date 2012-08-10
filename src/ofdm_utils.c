@@ -57,3 +57,64 @@ void scramble_with_initial_state(const char *in, char *out, int size, char initi
     }
 
 }
+
+void convolutional_encoding(const char *in, char *out_a, char *out_b, int size) {
+
+    //TODO: understand
+
+    //register of the encoder. only the first six bits are used
+    char encoder_register = 0x00;
+
+    int i, ib;
+
+    for (i = 0; i < size; i++) {
+
+        for (ib = 7; ib >= 0; ib--) {
+
+
+
+        }
+
+    }
+
+}
+#include <stdio.h>
+void pucturing(const char *in_a, const char *in_b, char *out, int size, enum CODING_RATE rate) {
+
+    int i, ib;
+    //size of the out array
+    int out_size;
+
+    switch (rate) {
+    case RATE_1_2:
+        out_size = size * 2;
+        break;
+    case RATE_2_3:
+        out_size = size * 3 / 2;
+        break;
+    case RATE_3_4:
+        out_size = size * 4 / 3;
+        break;
+    default:
+        //TODO add assert
+        return;
+        break;
+    }
+
+    for (i = 0; i < size; i++) {
+
+        for (ib = 7; ib >= 0; ib--) {
+
+            //coding rate 1/2 just takes all the bits of the input
+
+            int bit_a = get_bit(in_a[i], ib);
+            int bit_b = get_bit(in_b[i], ib);
+            //printf("i0 = %d, i = %d, ib1 = %d, ib2 = %d\n", i, i * 2  + ib * 2 / 8, ib * 2 % 8, ib * 2 % 8 + 1);
+            set_bit(&out[i * 2 + ib * 2 / 8], ib * 2 % 8 + 1, bit_a);
+            set_bit(&out[i * 2 + ib * 2 / 8], ib * 2 % 8, bit_b);
+
+        }
+
+    }
+
+}
