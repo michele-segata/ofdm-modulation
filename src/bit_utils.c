@@ -48,3 +48,17 @@ inline void set_bit(char *b, int i, int bit) {
         *b &= ~(1 << i);
     }
 }
+
+char get_polynomial(char reg, char generator, int size) {
+
+    int i;
+    char out = 0;
+
+    for (i = 0; i < size; i++) {
+        if (get_bit(generator, i)) {
+            out ^= get_bit(reg, i);
+        }
+    }
+    return out;
+
+}

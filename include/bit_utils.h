@@ -59,4 +59,14 @@ inline int get_bit(char b, int i);
  */
 inline void set_bit(char *b, int i, int bit);
 
+/**
+ * Computes the result of a polynomial generator.
+ *
+ * \param reg input register
+ * \param generator polynomial generator
+ * \param size size of the register in bit
+ * \return xor of the bits of the register indicated by the generator
+ */
+char get_polynomial(char reg, char generator, int size);
+
 #endif
