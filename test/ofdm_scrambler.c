@@ -1,29 +1,28 @@
 #include <stdio.h>
 
 #include "ofdm_utils.h"
+#include "bit_utils.h"
 
 int main() {
 
-#define SIZE 12
+#define SIZE 18
 
     char in[SIZE];
-    char out[SIZE*2];
-    char out_a[SIZE];
-    char out_b[SIZE];
-    char tmp[SIZE*2];
+    char out[SIZE * 2];
+    char tmp[SIZE * 2];
 
-    in[0]  = 0x00;
-    in[1]  = 0x00;
-    in[2]  = 0x20;
-    in[3]  = 0x40;
-    in[4]  = 0x00;
-    in[5]  = 0x74;
-    in[6]  = 0x00;
-    in[7]  = 0x06;
-    in[8]  = 0x08;
-    in[9]  = 0xB3;
-    in[10] = 0xEC;
-    in[11] = 0x65;
+    int read_bytes = read_bits_from_file("misc/data.bits", in, SIZE);
+
+    if (read_bytes == ERR_CANNOT_READ_FILE) {
+        printf("Cannot read file \"%s\": file not found?\n", "misc/data.bits");
+        return 0;
+    }
+    if (read_bytes == ERR_INVALID_FORMAT) {
+        printf("Invalid file format\n");
+        return 0;
+    }
+
+    printf("Read %d bytes = %d bits\n", read_bytes, read_bytes * 8);
 
     int i;
     printf("Input bit sequence:\n");
@@ -49,9 +48,17 @@ int main() {
 
     pucturing(tmp, out, SIZE * 2, RATE_3_4);
 
-    printf("Punctured bit sequences:\n");
+    printf("Punctured bit sequence rate 3/4:\n");
     for (i = 0; i < SIZE * 2 * 2 / 3; i++) {
         print_bits(out[i]);
+    }
+    printf("\n");
+
+    interleave(out, tmp, SIZE * 2 * 2 / 3, 192, 4);
+
+    printf("Interleaved bit sequence:\n");
+    for (i = 0; i < SIZE * 2 * 2 / 3; i++) {
+        print_bits(tmp[i]);
     }
     printf("\n");
 
