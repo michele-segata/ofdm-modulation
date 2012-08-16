@@ -86,4 +86,18 @@ void convolutional_encoding(const char *in, char *out, int size);
  */
 void pucturing(const char *in, char *out, int size, enum CODING_RATE rate);
 
+/**
+ * Perform the interleaving of a set of data bits
+ *
+ * \param in array of input bits
+ * \param out array of bytes where to store interleaved databits
+ * \param size size of the input array in bytes. The size of the output
+ * array must be equal
+ * \param n_cbps number of coded bits per symbol, i.e., how many bits
+ * will be included into one OFDM symbol. Notice that size must be a
+ * multiple of n_cbps
+ * \param n_bpsc number of bits per subcarrier
+ */
+void interleave(const char *in, char *out, int size, int n_cbps, int n_bpsc);
+
 #endif

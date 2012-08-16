@@ -20,9 +20,14 @@
  */
 
 #include <assert.h>
+#include <stdlib.h>
 
 #include "ofdm_utils.h"
 #include "bit_utils.h"
+
+int max(int a, int b) {
+    return a > b ? a : b;
+}
 
 void scramble(const char *in, char *out, int size) {
     scramble_with_initial_state(in, out, size, 0x7F);
@@ -77,7 +82,6 @@ void convolutional_encoding(const char *in, char *out, int size) {
     int i_in, ib;
     //indexes of the byte the the bit inside the output byte we are currently considering
     int i_o, ib_o = 0;
-
 
     for (i = 0; i < size * 8; i++) {
 
@@ -163,5 +167,68 @@ void pucturing(const char *in, char *out, int size, enum CODING_RATE rate) {
         }
 
     }
+
+}
+
+void interleave(const char *in, char *out, int size, int n_cbps, int n_bpsc) {
+
+    //index for the input bits
+    int k;
+    //index for the output bits after the first permutation
+    int i, out_i;
+    //index for the output bits after the second permutation
+    int j, out_j;
+    //helper index
+    int h;
+    //index of the current ofdm symbol
+    int s;
+    //value used for computing the second permutation
+    int sp;
+    //temporary storage for first permutation output
+    char *first_perm;
+
+    first_perm = (char *) calloc(sizeof(char), size);
+
+    sp = max(n_bpsc / 2, 1);
+
+    //run through all input bits and do the first permutation
+    for (h = 0; h < size * 8; h++) {
+
+        //compute the index of the current ofdm symbol
+        s = h / n_cbps;
+        //compute the index of the bit inside the current OFDM symbol
+        k = h % n_cbps;
+
+        //compute the index for the first permutation
+        i = (n_cbps / 16) * (k % 16) + ((int) (k / 16));
+        //i is the index w.r.t to current OFDM output symbol, but we have to put
+        //the bit into the output array
+        out_i = s * n_cbps + i;
+
+        //now copy the bit
+        set_bit(&first_perm[out_i / 8], 7 - out_i % 8, get_bit(in[h / 8], 7 - h % 8));
+
+    }
+
+    //run through all bits of the first permutation and do the second permutation
+    for (h = 0; h < size * 8; h++) {
+
+        //compute the index of the current ofdm symbol
+        s = h / n_cbps;
+        //compute the index of the bit inside the current OFDM symbol
+        i = h % n_cbps;
+
+        //compute the index for the first permutation
+        j = sp * ((int)(i / sp)) + (i + n_cbps - ((int)(16 * i / n_cbps))) % sp;
+        //j is the index w.r.t to current OFDM output symbol, but we have to put
+        //the bit into the output array
+        out_j = s * n_cbps + j;
+
+        //now copy the bit
+        set_bit(&out[out_j / 8], 7 - out_j % 8, get_bit(first_perm[h / 8], 7 - h % 8));
+
+    }
+
+    free(first_perm);
 
 }
