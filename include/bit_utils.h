@@ -22,6 +22,9 @@
 #ifndef _BIT_UTILS_H_
 #define _BIT_UTILS_H_
 
+#define ERR_CANNOT_READ_FILE -1
+#define ERR_INVALID_FORMAT   -2
+
 /**
  * Print the bit string composing one byte
  *
@@ -68,5 +71,28 @@ inline void set_bit(char *b, int i, int bit);
  * \return xor of the bits of the register indicated by the generator
  */
 char get_polynomial(char reg, char generator, int size);
+
+/**
+ * Read a bit-string from a file. The file must contain the bits
+ * written in little-endian, i.e., from the MSB to the LSB.
+ * The file can also contain comments, determined by a # at the
+ * beginning of the line. Bits must be written in groups, and
+ * the size of each group must be a multiple of eight. Each byte
+ * or group of bytes can be separated by spaces or new line.
+ * For example:
+ *
+ * #this is a sample bit file
+ * 00101101 11001011 0111000011000010
+ * 11010100
+ *
+ * is a valid bit file. The function will read 5 bytes
+ *
+ * \param filename the file to read
+ * \param bytes array where to store the read bits
+ * \param size maximum size of the bytes array
+ * \return the number of bytes read, or -1 in case
+ * of an error
+ */
+int read_bits_from_file(const char *filename, char *bytes, int size);
 
 #endif
