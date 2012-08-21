@@ -22,12 +22,93 @@
 #ifndef _OFDM_UTILS_H_
 #define _OFDM_UTILS_H_
 
+#include <fftw3.h>
+
+/**
+ * Define available data rates
+ */
+enum DATA_RATE {
+    //20 MHz bandwidth: 6 to 54 Mbps
+    BW_20_DR_6_MBPS,
+    BW_20_DR_9_MBPS,
+    BW_20_DR_12_MBPS,
+    BW_20_DR_18_MBPS,
+    BW_20_DR_24_MBPS,
+    BW_20_DR_36_MBPS,
+    BW_20_DR_48_MBPS,
+    BW_20_DR_54_MBPS,
+    //10 MHz bandwidth: 3 to 27 Mbps
+    BW_10_DR_3_MBPS,
+    BW_10_DR_4_5_MBPS,
+    BW_10_DR_6_MBPS,
+    BW_10_DR_9_MBPS,
+    BW_10_DR_12_MBPS,
+    BW_10_DR_18_MBPS,
+    BW_10_DR_24_MBPS,
+    BW_10_DR_27_MBPS
+};
+
 /**
  * Define coding rates for the puncturing function
  */
 enum CODING_RATE {
+    RATE_1_2, //r=1/2
     RATE_2_3, //r=2/3
     RATE_3_4  //r=3/4
+};
+
+/**
+ * Defines available modulation schemes
+ */
+enum MODULATION_TYPE {
+    BPSK,
+    QPSK,
+    QAM16,
+    QAM64
+};
+
+/**
+ * I Q tables for modulation schemes
+ */
+#define BPSK_NORMALIZATION      1.0
+#define QPSK_NORMALIZATION      0.707106781
+#define QAM16_NORMALIZATION     0.316227766
+#define QAM64_NORMALIZATION     0.15430335
+
+static const double bpsk_i[] = {-1 * BPSK_NORMALIZATION, 1 * BPSK_NORMALIZATION};
+static const double bpsk_q[] = {0, 0};
+
+static const double qpsk_i[] = {-1 * QPSK_NORMALIZATION, 1 * QPSK_NORMALIZATION};
+static const double qpsk_q[] = {-1 * QPSK_NORMALIZATION, 1 * QPSK_NORMALIZATION};
+
+static const double qam16_i[] = {-3 * QAM16_NORMALIZATION, -1 * QAM16_NORMALIZATION, 3 * QAM16_NORMALIZATION, 1 * QAM16_NORMALIZATION};
+static const double qam16_q[] = {-3 * QAM16_NORMALIZATION, -1 * QAM16_NORMALIZATION, 3 * QAM16_NORMALIZATION, 1 * QAM16_NORMALIZATION};
+
+static const double qam64_i[] = {-7 * QAM64_NORMALIZATION, -5 * QAM64_NORMALIZATION, -1 * QAM64_NORMALIZATION, -3 * QAM64_NORMALIZATION,
+                                  7 * QAM64_NORMALIZATION,  5 * QAM64_NORMALIZATION,  1 * QAM64_NORMALIZATION,  3 * QAM64_NORMALIZATION};
+
+static const double qam64_q[] = {-7 * QAM64_NORMALIZATION, -5 * QAM64_NORMALIZATION, -1 * QAM64_NORMALIZATION, -3 * QAM64_NORMALIZATION,
+                                  7 * QAM64_NORMALIZATION,  5 * QAM64_NORMALIZATION,  1 * QAM64_NORMALIZATION,  3 * QAM64_NORMALIZATION};
+
+/**
+ * Struct containing OFDM parameters for a given
+ * datarate and bandwidth
+ */
+struct OFDM_PARAMETERS {
+    //data rate
+    enum DATA_RATE          data_rate;
+    //rate field of the SIGNAL header
+    char                    signal_rate;
+    //modulation type
+    enum MODULATION_TYPE    modulation;
+    //code rate
+    enum CODING_RATE        coding_rate;
+    //number of coded bits per sub carrier
+    int                     n_bpsc;
+    //number of coded bits per OFDM symbol
+    int                     n_cbps;
+    //number of data bits per OFDM symbol
+    int                     n_dbps;
 };
 
 /**
@@ -99,5 +180,26 @@ void pucturing(const char *in, char *out, int size, enum CODING_RATE rate);
  * \param n_bpsc number of bits per subcarrier
  */
 void interleave(const char *in, char *out, int size, int n_cbps, int n_bpsc);
+
+/**
+ * Perform the modulation of a set of data bits
+ *
+ * \param in array of input bits
+ * \param size size of input array in bytes
+ * \param data_rate desired datarate (mandates modulation parameters)
+ * \param out two dimensional array containing modulated I,Q values
+ */
+void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out);
+
+/**
+ * Given the desired datarate for the 20 MHz channel spacing, return
+ * the set of parameters, such as N_CBPS, N_BPSC, puncturing rate,
+ * etc.
+ *
+ * \param data_rate the desired datarate
+ * \return a struct with all the OFDM parameters needed
+ *
+ */
+struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate);
 
 #endif

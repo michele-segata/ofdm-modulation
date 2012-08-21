@@ -219,7 +219,7 @@ void interleave(const char *in, char *out, int size, int n_cbps, int n_bpsc) {
         i = h % n_cbps;
 
         //compute the index for the first permutation
-        j = sp * ((int)(i / sp)) + (i + n_cbps - ((int)(16 * i / n_cbps))) % sp;
+        j = sp * ((int) (i / sp)) + (i + n_cbps - ((int) (16 * i / n_cbps))) % sp;
         //j is the index w.r.t to current OFDM output symbol, but we have to put
         //the bit into the output array
         out_j = s * n_cbps + j;
@@ -230,5 +230,166 @@ void interleave(const char *in, char *out, int size, int n_cbps, int n_bpsc) {
     }
 
     free(first_perm);
+
+}
+
+void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out) {
+
+    struct OFDM_PARAMETERS p = get_ofdm_parameter(data_rate);
+
+    int i;
+
+    for (i = 0; i < size * 8; i += p.n_bpsc) {
+
+        char in_i, in_q;
+
+        in_i = get_bit_group_value(in, size, i, max(p.n_bpsc / 2, 1));
+        in_q = get_bit_group_value(in, size, i + p.n_bpsc / 2, max(p.n_bpsc / 2, 1));
+
+        switch (p.modulation) {
+
+        case BPSK:
+
+            out[i / p.n_bpsc][0] = bpsk_i[in_i];
+            out[i / p.n_bpsc][1] = bpsk_q[in_q];
+            break;
+
+        case QPSK:
+
+            out[i / p.n_bpsc][0] = qpsk_i[in_i];
+            out[i / p.n_bpsc][1] = qpsk_q[in_q];
+            break;
+
+        case QAM16:
+
+            out[i / p.n_bpsc][0] = qam16_i[in_i];
+            out[i / p.n_bpsc][1] = qam16_q[in_q];
+            break;
+
+        case QAM64:
+
+            out[i / p.n_bpsc][0] = qam64_i[in_i];
+            out[i / p.n_bpsc][1] = qam64_q[in_q];
+            break;
+
+        }
+
+    }
+
+}
+
+struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
+
+    struct OFDM_PARAMETERS p;
+
+    p.data_rate = data_rate;
+
+    switch (data_rate) {
+
+    case BW_20_DR_6_MBPS:
+    case BW_10_DR_3_MBPS:
+
+        p.modulation = BPSK;
+        p.coding_rate = RATE_1_2;
+        p.n_bpsc = 1;
+        p.n_cbps = 48;
+        p.n_dbps = 24;
+        p.signal_rate = 0b00001101;
+
+        break;
+
+    case BW_20_DR_9_MBPS:
+    case BW_10_DR_4_5_MBPS:
+
+        p.modulation = BPSK;
+        p.coding_rate = RATE_3_4;
+        p.n_bpsc = 1;
+        p.n_cbps = 48;
+        p.n_dbps = 36;
+        p.signal_rate = 0b00001111;
+
+        break;
+
+    case BW_20_DR_12_MBPS:
+    case BW_10_DR_6_MBPS:
+
+        p.modulation = QPSK;
+        p.coding_rate = RATE_1_2;
+        p.n_bpsc = 2;
+        p.n_cbps = 96;
+        p.n_dbps = 48;
+        p.signal_rate = 0b00000101;
+
+        break;
+
+    case BW_20_DR_18_MBPS:
+    case BW_10_DR_9_MBPS:
+
+        p.modulation = QPSK;
+        p.coding_rate = RATE_3_4;
+        p.n_bpsc = 2;
+        p.n_cbps = 96;
+        p.n_dbps = 72;
+        p.signal_rate = 0b00000111;
+
+        break;
+
+    case BW_20_DR_24_MBPS:
+    case BW_10_DR_12_MBPS:
+
+        p.modulation = QAM16;
+        p.coding_rate = RATE_1_2;
+        p.n_bpsc = 4;
+        p.n_cbps = 192;
+        p.n_dbps = 96;
+        p.signal_rate = 0b00001001;
+
+        break;
+
+    case BW_20_DR_36_MBPS:
+    case BW_10_DR_18_MBPS:
+
+        p.modulation = QAM16;
+        p.coding_rate = RATE_3_4;
+        p.n_bpsc = 4;
+        p.n_cbps = 192;
+        p.n_dbps = 144;
+        p.signal_rate = 0b00001011;
+
+        break;
+
+    case BW_20_DR_48_MBPS:
+    case BW_10_DR_24_MBPS:
+
+        p.modulation = QAM64;
+        p.coding_rate = RATE_2_3;
+        p.n_bpsc = 6;
+        p.n_cbps = 288;
+        p.n_dbps = 192;
+        p.signal_rate = 0b00000001;
+
+        break;
+
+    case BW_20_DR_54_MBPS:
+    case BW_10_DR_27_MBPS:
+
+        p.modulation = QAM64;
+        p.coding_rate = RATE_3_4;
+        p.n_bpsc = 6;
+        p.n_cbps = 288;
+        p.n_dbps = 216;
+        p.signal_rate = 0b00000011;
+
+        break;
+
+    default:
+
+        assert(0);
+
+        break;
+
+    }
+
+    return p;
 
 }
