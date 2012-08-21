@@ -3,7 +3,6 @@ project (ofdm-modulation)
 
 add_executable(ofdm_preamble ofdm_preamble.c)
 
-find_package (fftw3 REQUIRED)
 if (FFTW_FOUND)
   include_directories(${FFTW_INCLUDE_DIRS})
   set(LIBS ${LIBS} ${FFTW_LIBRARIES})
