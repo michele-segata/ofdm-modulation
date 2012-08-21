@@ -22,6 +22,7 @@
 #include "bit_utils.h"
 
 #include <stdio.h>
+#include <assert.h>
 
 void print_bits(char b) {
     int i;
@@ -163,5 +164,37 @@ int read_bits_from_file(const char *filename, char *bytes, int size) {
     fclose(f);
 
     return bytes_read;
+
+}
+
+char get_bit_group_value(const char *bytes, int size, int a, int length) {
+
+    //index for getting bits
+    int i;
+    //output value
+    char out = 0;
+
+    for (i = a; i < a + length; i++) {
+
+        int bit = get_ith_bit(bytes, i);
+        set_bit(&out, length - (i - a) - 1, bit);
+
+    }
+
+    return out;
+
+}
+
+int get_ith_bit(const char *b, int i) {
+
+    //index of the byte
+    int i_byte;
+    //index of the bit inside the byte
+    int i_bit;
+
+    i_byte = i / 8;
+    i_bit = 7 - i % 8;
+
+    return get_bit(b[i_byte], i_bit);
 
 }

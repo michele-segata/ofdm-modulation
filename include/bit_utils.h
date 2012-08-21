@@ -63,6 +63,18 @@ inline int get_bit(char b, int i);
 inline void set_bit(char *b, int i, int bit);
 
 /**
+ * Returns the i-th bit in a string of bytes.
+ * The function treats an array of byte as a vector
+ * of bits, where bit 0 is the MSB of the first byte
+ * and bit n-1 is the LSB of the last one.
+ *
+ * \param b array of bytes
+ * \param i index of the bit
+ * \return the value of the bit
+ */
+int get_ith_bit(const char *b, int i);
+
+/**
  * Computes the result of a polynomial generator.
  *
  * \param reg input register
@@ -94,5 +106,21 @@ char get_polynomial(char reg, char generator, int size);
  * of an error
  */
 int read_bits_from_file(const char *filename, char *bytes, int size);
+
+/**
+ * Return the integer value of a group of bits inside a bit
+ * string. For example, if input is byte=01011100 and the value
+ * for the range [1, 3] is requested (101), then 5 is returned.
+ * This is particularly useful when modulating bits with QPSK
+ * or QAM, to get I and Q values from groups of modulated
+ * bits.
+ *
+ * \param bytes array of input bytes
+ * \param size size of the bytes array (in bytes)
+ * \param a index of the first bit to be considered (MSB)
+ * \param length number of bits to be taken starting from a
+ * \return the decimal value of bits in range [a, b]
+ */
+char get_bit_group_value(const char *bytes, int size, int a, int length);
 
 #endif
