@@ -393,3 +393,33 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
     return p;
 
 }
+
+void map_ofdm_to_ifft(double **ofdm, fftw_complex *ifft) {
+
+    // data(0) should be input(26) -offset 0- which is 0 so we leave as is
+    // data(1..26) should be input elements(27-53) -offset 1..26-
+    //data.replace_mid (1, input.mid (27, 26));
+    // data (27..37) should be zero so we leave them as is
+    // data (38..63) should be input 0 to 25
+    //data.replace_mid (38, input.mid (0, 26));
+
+    int i;
+    ifft[0][0] = 0;
+    ifft[0][1] = 0;
+
+    for (i = 1; i <= 26; i++) {
+        ifft[i][0] = ofdm[i + 26][0];
+        ifft[i][1] = ofdm[i + 26][1];
+    }
+
+    for (i = 27; i <= 37; i++) {
+        ifft[i][0] = 0;
+        ifft[i][1] = 0;
+    }
+
+    for (i = 38; i <= 63; i++) {
+        ifft[i][0] = ofdm[i - 38][0];
+        ifft[i][1] = ofdm[i - 38][1];
+    }
+
+}

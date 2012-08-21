@@ -202,4 +202,6 @@ void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out);
  */
 struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate);
 
+void map_ofdm_to_ifft(double **ofdm, fftw_complex *ifft);
+
 #endif
