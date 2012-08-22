@@ -294,7 +294,7 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
         p.n_bpsc = 1;
         p.n_cbps = 48;
         p.n_dbps = 24;
-        p.signal_rate = 0b00001101;
+        p.signal_rate = 0x0D; //0b00001101
 
         break;
 
@@ -306,7 +306,7 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
         p.n_bpsc = 1;
         p.n_cbps = 48;
         p.n_dbps = 36;
-        p.signal_rate = 0b00001111;
+        p.signal_rate = 0x0F; //0b00001111;
 
         break;
 
@@ -318,7 +318,7 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
         p.n_bpsc = 2;
         p.n_cbps = 96;
         p.n_dbps = 48;
-        p.signal_rate = 0b00000101;
+        p.signal_rate = 0x05; //0b00000101;
 
         break;
 
@@ -330,7 +330,7 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
         p.n_bpsc = 2;
         p.n_cbps = 96;
         p.n_dbps = 72;
-        p.signal_rate = 0b00000111;
+        p.signal_rate = 0x07; //0b00000111;
 
         break;
 
@@ -342,7 +342,7 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
         p.n_bpsc = 4;
         p.n_cbps = 192;
         p.n_dbps = 96;
-        p.signal_rate = 0b00001001;
+        p.signal_rate = 0x09; //0b00001001;
 
         break;
 
@@ -354,7 +354,7 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
         p.n_bpsc = 4;
         p.n_cbps = 192;
         p.n_dbps = 144;
-        p.signal_rate = 0b00001011;
+        p.signal_rate = 0x0B; //0b00001011;
 
         break;
 
@@ -366,7 +366,7 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
         p.n_bpsc = 6;
         p.n_cbps = 288;
         p.n_dbps = 192;
-        p.signal_rate = 0b00000001;
+        p.signal_rate = 0x01; //0b00000001;
 
         break;
 
@@ -378,7 +378,7 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
         p.n_bpsc = 6;
         p.n_cbps = 288;
         p.n_dbps = 216;
-        p.signal_rate = 0b00000011;
+        p.signal_rate = 0x03; //0b00000011;
 
         break;
 
