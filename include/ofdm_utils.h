@@ -112,6 +112,14 @@ struct OFDM_PARAMETERS {
 };
 
 /**
+ * Defines subcarriers polarities
+ */
+static const double subcarrier_polarities[] = {1,1,1,1, -1,-1,-1,1, -1,-1,-1,-1, 1,1,-1,1, -1,-1,1,1, -1,1,1,-1, 1,1,1,1, 1,1,-1,1,
+                                             1,1,-1,1, 1,-1,-1,1, 1,1,-1,1, -1,-1,-1,1, -1,1,-1,-1, 1,-1,-1,1, 1,1,1,1, -1,-1,1,1,
+                                             -1,-1,1,-1, 1,-1,1,1, -1,-1,-1,1, 1,-1,-1,-1, -1,1,-1,-1, 1,-1,1,1, 1,1,-1,1, -1,1,-1,1,
+                                             -1,-1,-1,-1, -1,1,-1,1, 1,-1,1,-1, 1,1,1,-1, -1,1,-1,-1, -1,1,1,1, -1,-1,-1,-1, -1,-1,-1};
+
+/**
  * Perform the scrambling of a set of bytes, as mandated by
  * 802.11-2007, 17.3.5.4.
  * The initial state of the register is set to all ones.
@@ -192,6 +200,20 @@ void interleave(const char *in, char *out, int size, int n_cbps, int n_bpsc);
 void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out);
 
 /**
+ * Insert the pilot subcarriers into the modulated symbols
+ *
+ * \param in two dimensional array containing the I,Q values of modulated
+ * bits. The size of this array must be of 48 I,Q pairs
+ * \param out two dimensional array which will contain modulated I,Q values
+ * plus 4 pilot subcarriers and the DC offset. Size of such array is of
+ * 53 I,Q pairs
+ * \param symbol_index index of the OFDM symbol within the whole transmission.
+ * Notice that index 0 is the SIGNAL field, while index 1 is the first
+ * OFDM data symbol
+ */
+void insert_pilots(const double **in, double **out, int symbol_index);
+
+/**
  * Given the desired datarate for the 20 MHz channel spacing, return
  * the set of parameters, such as N_CBPS, N_BPSC, puncturing rate,
  * etc.
@@ -202,6 +224,13 @@ void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out);
  */
 struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate);
 
-void map_ofdm_to_ifft(double **ofdm, fftw_complex *ifft);
+/**
+ * Maps the 53 frequency domain I,Q values modulated using OFDM
+ * into the 64 frequency domain I,Q values to be given to the IFFT
+ *
+ * \param ofdm array of 53 OFDM modulated I,Q pairs
+ * \param ifft array of 64 I,Q pairs where to store IFFT inputs
+ */
+void map_ofdm_to_ifft(const double **ofdm, fftw_complex *ifft);
 
 #endif

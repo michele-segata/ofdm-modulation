@@ -278,6 +278,64 @@ void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out) 
 
 }
 
+void insert_pilots(const double **in, double **out, int symbol_index) {
+
+    int i;
+
+    //polarity of pilot subcarriers for current symbol
+    int polarity = subcarrier_polarities[symbol_index];
+
+    //on the standard, pilots are mapped inserted into positions -21, -7, 7, 21
+    //using a 0-based array, means we have to put them into positions 5, 19, 33, 47
+    out[5][0] = polarity;
+    out[5][1] = 0;
+    out[19][0] = polarity;
+    out[19][1] = 0;
+    out[33][0] = polarity;
+    out[33][1] = 0;
+    out[47][0] = -polarity;
+    out[47][1] = 0;
+    //insert also DC subcarrier
+    out[26][0] = 0;
+    out[26][1] = 0;
+
+    //now insert modulated I,Q values (802.11-2007, 17-23)
+    for (i = 0; i < 48; i++) {
+
+        if (0 <= i && i <= 4) {
+            out[i][0] = in[i][0];
+            out[i][1] = in[i][1];
+            continue;
+        }
+        if (5 <= i && i <= 17) {
+            out[i + 1][0] = in[i][0];
+            out[i + 1][1] = in[i][1];
+            continue;
+        }
+        if (18 <= i && i <= 23) {
+            out[i + 2][0] = in[i][0];
+            out[i + 2][1] = in[i][1];
+            continue;
+        }
+        if (24 <= i && i <= 29) {
+            out[i + 3][0] = in[i][0];
+            out[i + 3][1] = in[i][1];
+            continue;
+        }
+        if (30 <= i && i <= 42) {
+            out[i + 4][0] = in[i][0];
+            out[i + 4][1] = in[i][1];
+            continue;
+        }
+        if (43 <= i && i <= 47) {
+            out[i + 5][0] = in[i][0];
+            out[i + 5][1] = in[i][1];
+        }
+
+    }
+
+}
+
 struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
 
     struct OFDM_PARAMETERS p;
@@ -396,12 +454,10 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
 
 void map_ofdm_to_ifft(double **ofdm, fftw_complex *ifft) {
 
-    // data(0) should be input(26) -offset 0- which is 0 so we leave as is
-    // data(1..26) should be input elements(27-53) -offset 1..26-
-    //data.replace_mid (1, input.mid (27, 26));
-    // data (27..37) should be zero so we leave them as is
-    // data (38..63) should be input 0 to 25
-    //data.replace_mid (38, input.mid (0, 26));
+    // out 0        must be 0
+    // out 1->26    must be 1->26, base 0 means 27->53
+    // out 27->37   must be 0
+    // out 38->63   must be -26->-1 base 0 means 0->25
 
     int i;
     ifft[0][0] = 0;
