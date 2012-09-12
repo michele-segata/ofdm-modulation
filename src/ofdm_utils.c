@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "ofdm_utils.h"
 #include "bit_utils.h"
@@ -494,3 +495,80 @@ void map_ofdm_to_ifft(fftw_complex *ofdm, fftw_complex *ifft) {
     }
 
 }
+
+void perform_ifft(fftw_complex *freq_in, fftw_complex *time_out) {
+
+    fftw_plan ifft;
+
+    fftw_complex *in = fftw_alloc_complex(64);
+    fftw_complex *out = fftw_alloc_complex(64);
+
+    int i;
+    for (i = 0; i < 64; i++) {
+        in[i][0] = freq_in[i][0];
+        in[i][1] = freq_in[i][1];
+    }
+
+    ifft = fftw_plan_dft_1d(64, in, out, FFTW_BACKWARD, FFTW_ESTIMATE);
+    fftw_execute(ifft);
+
+    for (i = 0; i < 64; i++) {
+        time_out[i][0] = out[i][0];
+        time_out[i][1] = out[i][1];
+    }
+
+    fftw_destroy_plan(ifft);
+
+    fftw_free(in);
+    fftw_free(out);
+
+}
+
+void normalize_ifft_output(fftw_complex *in, int size, int fftSize) {
+
+    int i;
+    for (i = 0; i < size; i++) {
+        in[i][0] *= 1.0 / (double) fftSize;
+        in[i][1] *= 1.0 / (double) fftSize;
+    }
+
+}
+
+void multiply_by(fftw_complex *x, int size, double value) {
+
+    int i;
+    for (i = 0; i < size; i++) {
+        x[i][0] *= value;
+        x[i][1] *= value;
+    }
+
+}
+
+void add_cyclic_prefix(fftw_complex *in, int in_size, fftw_complex *out, int out_size, int cp_length) {
+
+    //index of current sample
+    int i;
+
+    assert(cp_length < in_size);
+
+    //0  ... 15 16 ... 79 80 ... 95 96 ... 159 160
+    //48 ... 63 0  ... 63 0  ... 63 0  ... 63  0
+
+    for (i = cp_length; i < out_size; i++) {
+        out[i][0] = in[(i - cp_length) % in_size][0];
+        out[i][1] = in[(i - cp_length) % in_size][1];
+    }
+    for (i = 0; i < cp_length; i++) {
+        out[i][0] = in[(i + in_size - cp_length) % in_size][0];
+        out[i][1] = in[(i + in_size - cp_length) % in_size][1];
+    }
+
+}
+
+void apply_window_function(fftw_complex *in, int size) {
+    in[0][0] *= 0.5;
+    in[0][1] *= 0.5;
+    in[size - 1][0] *= 0.5;
+    in[size - 1][1] *= 0.5;
+}
+
