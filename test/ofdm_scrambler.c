@@ -13,8 +13,6 @@ int main() {
     char in[SIZE];
     char out[SIZE * 2];
     char tmp[SIZE * 2];
-    double **mod;
-    fftw_complex * ifft = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 64);;
 
     struct OFDM_PARAMETERS params = get_ofdm_parameter(BW_20_DR_36_MBPS);
 
@@ -29,65 +27,86 @@ int main() {
         return 0;
     }
 
+    fftw_complex *ifft = fftw_alloc_complex(64);
+    fftw_complex *mod = fftw_alloc_complex(48);
+    fftw_complex *pil = fftw_alloc_complex(53);
+    fftw_complex *time = fftw_alloc_complex(64);
+    fftw_complex *ext = fftw_alloc_complex(81);
+    fftw_complex *signal = fftw_alloc_complex(81);
+
     printf("Read %d bytes = %d bits\n", read_bytes, read_bytes * 8);
 
-    int i;
-
-    mod = (double **) calloc(48, sizeof(double *));
-    for (i = 0; i < 48; i++) {
-        mod[i] = (double *) calloc(2, sizeof(double *));
-    }
-
     printf("Input bit sequence:\n");
-    for (i = 0; i < SIZE; i++) {
-        print_bits(in[i]);
-    }
+    print_bits_array(in, SIZE);
     printf("\n");
 
     scramble_with_initial_state(in, out, SIZE, 0x5D);
 
     printf("Scrambled bit sequence:\n");
-    for (i = 0; i < SIZE; i++) {
-        print_bits(out[i]);
-    }
+    print_bits_array(out, SIZE);
     printf("\n");
 
     convolutional_encoding(out, tmp, SIZE);
     printf("Encoded bit sequence rate 1/2:\n");
-    for (i = 0; i < SIZE * 2; i++) {
-        print_bits(tmp[i]);
-    }
+    print_bits_array(tmp, SIZE * 2);
     printf("\n");
 
     pucturing(tmp, out, SIZE * 2, params.coding_rate);
 
     printf("Punctured bit sequence rate 3/4:\n");
-    for (i = 0; i < SIZE * 2 * 2 / 3; i++) {
-        print_bits(out[i]);
-    }
+    print_bits_array(out, SIZE * 4 / 3);
     printf("\n");
 
     interleave(out, tmp, SIZE * 2 * 2 / 3, params.n_cbps, params.n_bpsc);
 
     printf("Interleaved bit sequence:\n");
-    for (i = 0; i < SIZE * 2 * 2 / 3; i++) {
-        print_bits(tmp[i]);
-    }
+    print_bits_array(tmp, SIZE * 4 / 3);
     printf("\n");
 
     modulate(tmp, SIZE * 2 * 2 / 3, params.data_rate, mod);
-    map_ofdm_to_ifft(mod, ifft);
 
     printf("Modulated bits (QAM16):\n");
-    for (i = 0; i < 64; i++) {
-        printf("(%.4f, %.4f) ", ifft[i][0], ifft[i][1]);
-    }
+    print_complex_array(mod, 48);
     printf("\n");
 
-    for (i = 0; i < 48; i++) {
-        free(mod[i]);
-    }
-    free(mod);
+    insert_pilots(mod, pil, 1);
+
+    printf("Pilot insertion:\n");
+    print_complex_array(pil, 53);
+    printf("\n");
+
+    map_ofdm_to_ifft(pil, ifft);
+
+    printf("IFFT input:\n");
+    print_complex_array(ifft, 64);
+    printf("\n");
+
+    perform_ifft(ifft, time);
+    normalize_ifft_output(time, 64, 64);
+
+    printf("Time samples:\n");
+    print_complex_array(time, 64);
+    printf("\n");
+
+    add_cyclic_prefix(time, 64, ext, 81, 16);
+    apply_window_function(ext, 81);
+
+    printf("Time samples i (cyclically extended):\n");
+    print_complex_array(ext, 81);
+    printf("\n");
+
+    generate_signal_field(signal, BW_20_DR_36_MBPS, 100);
+
+    printf("SIGNAL header time samples:\n");
+    print_complex_array(signal, 81);
+    printf("\n");
+
+    fftw_free(mod);
+    fftw_free(pil);
+    fftw_free(ifft);
+    fftw_free(time);
+    fftw_free(ext);
+    fftw_free(signal);
 
     return 0;
 
