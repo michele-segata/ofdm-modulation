@@ -233,11 +233,12 @@ void interleave(const char *in, char *out, int size, int n_cbps, int n_bpsc) {
 
 }
 
-void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out) {
+void modulate(const char *in, int size, enum DATA_RATE data_rate, fftw_complex *out) {
 
     struct OFDM_PARAMETERS p = get_ofdm_parameter(data_rate);
 
     int i;
+    int idx;
 
     for (i = 0; i < size * 8; i += p.n_bpsc) {
 
@@ -246,30 +247,44 @@ void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out) 
         in_i = get_bit_group_value(in, size, i, max(p.n_bpsc / 2, 1));
         in_q = get_bit_group_value(in, size, i + p.n_bpsc / 2, max(p.n_bpsc / 2, 1));
 
+        idx = i / p.n_bpsc;
+
         switch (p.modulation) {
 
         case BPSK:
 
-            out[i / p.n_bpsc][0] = bpsk_i[in_i];
-            out[i / p.n_bpsc][1] = bpsk_q[in_q];
+            assert(0 <= in_i && in_i <= 1);
+            assert(0 <= in_q && in_q <= 1);
+
+            out[idx][0] = bpsk_i[in_i];
+            out[idx][1] = bpsk_q[in_q];
             break;
 
         case QPSK:
 
-            out[i / p.n_bpsc][0] = qpsk_i[in_i];
-            out[i / p.n_bpsc][1] = qpsk_q[in_q];
+            assert(0 <= in_i && in_i <= 3);
+            assert(0 <= in_q && in_q <= 3);
+
+            out[idx][0] = qpsk_i[in_i];
+            out[idx][1] = qpsk_q[in_q];
             break;
 
         case QAM16:
 
-            out[i / p.n_bpsc][0] = qam16_i[in_i];
-            out[i / p.n_bpsc][1] = qam16_q[in_q];
+            assert(0 <= in_i && in_i <= 15);
+            assert(0 <= in_q && in_q <= 15);
+
+            out[idx][0] = qam16_i[in_i];
+            out[idx][1] = qam16_q[in_q];
             break;
 
         case QAM64:
 
-            out[i / p.n_bpsc][0] = qam64_i[in_i];
-            out[i / p.n_bpsc][1] = qam64_q[in_q];
+            assert(0 <= in_i && in_i <= 63);
+            assert(0 <= in_q && in_q <= 63);
+
+            out[idx][0] = qam64_i[in_i];
+            out[idx][1] = qam64_q[in_q];
             break;
 
         }
@@ -278,7 +293,7 @@ void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out) 
 
 }
 
-void insert_pilots(const double **in, double **out, int symbol_index) {
+void insert_pilots(fftw_complex *in, fftw_complex *out, int symbol_index) {
 
     int i;
 
@@ -452,7 +467,7 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
 
 }
 
-void map_ofdm_to_ifft(double **ofdm, fftw_complex *ifft) {
+void map_ofdm_to_ifft(fftw_complex *ofdm, fftw_complex *ifft) {
 
     // out 0        must be 0
     // out 1->26    must be 1->26, base 0 means 27->53

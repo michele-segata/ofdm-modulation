@@ -197,7 +197,7 @@ void interleave(const char *in, char *out, int size, int n_cbps, int n_bpsc);
  * \param data_rate desired datarate (mandates modulation parameters)
  * \param out two dimensional array containing modulated I,Q values
  */
-void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out);
+void modulate(const char *in, int size, enum DATA_RATE data_rate, fftw_complex *out);
 
 /**
  * Insert the pilot subcarriers into the modulated symbols
@@ -211,7 +211,7 @@ void modulate(const char *in, int size, enum DATA_RATE data_rate, double **out);
  * Notice that index 0 is the SIGNAL field, while index 1 is the first
  * OFDM data symbol
  */
-void insert_pilots(const double **in, double **out, int symbol_index);
+void insert_pilots(fftw_complex *in, fftw_complex *out, int symbol_index);
 
 /**
  * Given the desired datarate for the 20 MHz channel spacing, return
@@ -231,6 +231,6 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate);
  * \param ofdm array of 53 OFDM modulated I,Q pairs
  * \param ifft array of 64 I,Q pairs where to store IFFT inputs
  */
-void map_ofdm_to_ifft(const double **ofdm, fftw_complex *ifft);
+void map_ofdm_to_ifft(fftw_complex *ofdm, fftw_complex *ifft);
 
 #endif
