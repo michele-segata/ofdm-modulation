@@ -34,7 +34,7 @@ void print_bits(char b) {
 void print_bits_array(const char *b, int size) {
     int i;
     for (i = 0; i < size; i++) {
-
+        print_bits(b[i]);
     }
 }
 
