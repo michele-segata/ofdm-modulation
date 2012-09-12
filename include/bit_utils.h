@@ -22,6 +22,8 @@
 #ifndef _BIT_UTILS_H_
 #define _BIT_UTILS_H_
 
+#include <fftw3.h>
+
 #define ERR_CANNOT_READ_FILE -1
 #define ERR_INVALID_FORMAT   -2
 
@@ -39,6 +41,14 @@ void print_bits(char b);
  * \param size the length of the array
  */
 void print_bits_array(const char *b, int size);
+
+/**
+ * Print an array of complex samples
+ *
+ * \param c array of complex samples
+ * \param size the length of the array
+ */
+void print_complex_array(fftw_complex *c, int size);
 
 /**
  * Returns the i-th bit of a byte.

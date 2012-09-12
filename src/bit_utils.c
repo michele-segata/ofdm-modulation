@@ -38,6 +38,16 @@ void print_bits_array(const char *b, int size) {
     }
 }
 
+void print_complex_array(fftw_complex *c, int size) {
+    int i;
+    for (i = 0; i < size; i++) {
+        printf("(%.3f, %.3f)", c[i][0], c[i][1]);
+        if (i != size - 1) {
+            printf(" ");
+        }
+    }
+}
+
 inline int get_bit(char b, int i) {
     return (b & (1 << i) ? 1 : 0);
 }
