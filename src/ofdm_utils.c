@@ -572,3 +572,47 @@ void apply_window_function(fftw_complex *in, int size) {
     in[size - 1][1] *= 0.5;
 }
 
+void generate_short_training_sequence(fftw_complex *out) {
+
+    fftw_complex *ifft = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * 64);
+    fftw_complex *symbol = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * 64);
+
+    //map the OFDM frequency domain representation to IFFT inputs
+    map_ofdm_to_ifft(freq_short_symbol, ifft);
+    //normalize input
+    multiply_by(ifft, 64, sqrt(13.0 / 6.0));
+    //perform the IFFT
+    perform_ifft(ifft, symbol);
+    //normalize the power
+    normalize_ifft_output(symbol, 64, 64);
+    //cyclically repeat the symbol
+    add_cyclic_prefix(symbol, 64, out, 161, 0);
+    //apply the window function for merging with long training sequence
+    apply_window_function(out, 161);
+
+    fftw_free(symbol);
+    fftw_free(ifft);
+
+}
+
+void generate_long_training_sequence(fftw_complex *out) {
+
+    fftw_complex *ifft = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * 64);
+    fftw_complex *symbol = (fftw_complex *) fftw_malloc(sizeof(fftw_complex) * 64);
+
+    //map the OFDM frequency domain representation to IFFT inputs
+    map_ofdm_to_ifft(freq_long_symbol, ifft);
+    //perform the IFFT
+    perform_ifft(ifft, symbol);
+    //normalize the power
+    normalize_ifft_output(symbol, 64, 64);
+    //cyclically repeat the symbol
+    add_cyclic_prefix(symbol, 64, out, 161, 32);
+    //apply the window function for merging with long training sequence
+    apply_window_function(out, 161);
+
+    fftw_free(symbol);
+    fftw_free(ifft);
+
+}
+

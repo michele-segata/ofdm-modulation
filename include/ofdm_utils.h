@@ -120,6 +120,28 @@ static const double subcarrier_polarities[] = {1,1,1,1, -1,-1,-1,1, -1,-1,-1,-1,
                                              -1,-1,-1,-1, -1,1,-1,1, 1,-1,1,-1, 1,1,1,-1, -1,1,-1,-1, -1,1,1,1, -1,-1,-1,-1, -1,-1,-1};
 
 /**
+ * Frequency domain representation of the short
+ * training symbol
+ */
+static fftw_complex freq_short_symbol[] = {{0, 0}, {0, 0}, {1,1}, {0, 0}, {0, 0}, {0, 0}, {-1,-1}, {0, 0}, {0, 0}, {0, 0}, {1,1},
+                                              {0, 0}, {0, 0}, {0, 0}, {-1,-1}, {0, 0}, {0, 0}, {0, 0}, {-1,-1}, {0, 0}, {0, 0}, {0, 0},
+                                              {1,1}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {-1,-1}, {0, 0}, {0, 0},
+                                              {0, 0}, {-1,-1}, {0, 0}, {0, 0}, {0, 0}, {1,1}, {0, 0}, {0, 0}, {0, 0}, {1,1}, {0, 0},
+                                              {0, 0}, {0, 0}, {1,1}, {0, 0}, {0, 0}, {0, 0}, {1,1}, {0, 0}, {0, 0}};
+
+/**
+ * Frequency domain representation of the long
+ * training symbol
+ */
+static fftw_complex freq_long_symbol[] = {{1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {1, 0}, {1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0},
+                                             {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {1, 0}, {1, 0}, {-1, 0},
+                                             {1, 0}, {-1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {0, 0}, {1, 0}, {-1, 0}, {-1, 0},
+                                             {1, 0}, {1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0},
+                                             {-1, 0}, {1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0},
+                                             {1, 0}, {1, 0}, {1, 0}};
+
+
+/**
  * Perform the scrambling of a set of bytes, as mandated by
  * 802.11-2007, 17.3.5.4.
  * The initial state of the register is set to all ones.
@@ -291,4 +313,25 @@ void add_cyclic_prefix(fftw_complex *in, int in_size, fftw_complex *out, int out
  * \param size size of the input array
  */
 void apply_window_function(fftw_complex *in, int size);
+
+/**
+ * Generates the short training sequence. Such sequence is already
+ * windowed. The size if 161 sample, so that it can be concatenated
+ * with the long training sequence
+ *
+ * \param out array of complex time samples where to store the 161
+ * complex time samples
+ */
+void generate_short_training_sequence(fftw_complex *out);
+
+/**
+ * Generates the short training sequence. Such sequence is already
+ * windowed. The size if 161 sample, so that it can be concatenated
+ * with the following symbols
+ *
+ * \param out array of complex time samples where to store the 161
+ * complex time samples
+ */
+void generate_long_training_sequence(fftw_complex *out);
+
 #endif
