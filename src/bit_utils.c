@@ -208,3 +208,19 @@ int get_ith_bit(const char *b, int i) {
     return get_bit(b[i_byte], i_bit);
 
 }
+
+int compute_even_parity(const char *in, int base, int length) {
+
+    //number of bits set to 1
+    int count = 0;
+    int i;
+
+    for (i = 0; i < length; i++) {
+        if (get_ith_bit(in, i + base)) {
+            count++;
+        }
+    }
+
+    return count % 2;
+
+}

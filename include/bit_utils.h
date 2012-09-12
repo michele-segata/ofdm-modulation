@@ -133,4 +133,15 @@ int read_bits_from_file(const char *filename, char *bytes, int size);
  */
 char get_bit_group_value(const char *bytes, int size, int a, int length);
 
+/**
+ * Generate a even parity bit for a set of bits. This function can be used
+ * to compute the odd parity, simply by computing 1 - compute_even_parity()
+ *
+ * \param in array of bytes
+ * \param base base index, i.e., where to start counting for the bits
+ * \param length number of bits to compute the parity for
+ * \return 0 in the case of an even number of 1 bits, 1 otherwise
+ */
+int compute_even_parity(const char *in, int base, int length);
+
 #endif
