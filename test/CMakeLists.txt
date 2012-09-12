@@ -6,6 +6,10 @@ if (FFTW_FOUND)
   set(LIBS ${LIBS} ${FFTW_LIBRARIES})
 endif (FFTW_FOUND)
 
+# Add efence link
+find_library(EFENCE_LIBRARY NAMES efence PATHS /opt/local/lib/)
+set(LIBS ${LIBS} ${EFENCE_LIBRARY})
+
 add_executable(ofdm_scrambler_test ofdm_scrambler.c)
 #add_executable(ofdm_puncturing_test ofdm_puncturing.c)
 
