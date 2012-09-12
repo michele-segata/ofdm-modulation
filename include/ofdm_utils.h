@@ -334,4 +334,37 @@ void generate_short_training_sequence(fftw_complex *out);
  */
 void generate_long_training_sequence(fftw_complex *out);
 
+/**
+ * Sums a set of complex time samples over a portion of another
+ * set of complex time samples. This can be useful to generate the
+ * final frame. For example, starting from an array of complex values
+ * set all to 0, the short training sequence can be inserted by summing
+ * it to values from 0 to 160. The long training sequence can be added
+ * by summing it to values from 160 to 320, and so on. In such a way,
+ * the function automatically merges subsequent symbols at their
+ * intersection point.
+ *
+ * \param in_a first input array. this array is overwritten by the
+ * operation
+ * \param in_b second input array. this array is only taken as input
+ * and summed with the first array
+ * \param size_b size of the second array
+ * \param base_index index of the first array where to start to store
+ * the result of the sum. the size of the first array is not needed,
+ * but clearly, base_index + size_b must be less than the size of
+ * the first array to avoid out-of-bounds errors
+ */
+void sum_samples(fftw_complex *in_a, fftw_complex *in_b, int size_b, int base_index);
+
+/**
+ * Generates the complex time samples for the SIGNAL header field.
+ *
+ * \param out pointer to an array of complex time samples where to store
+ * the SIGNAL header. The array must have a size of 81 samples
+ * \param data_rate the data rate that will be used for sending the data
+ * \param length number of data bytes that are passed from the MAC layer
+ * to the PHY layer, i.e., the size of the PSDU
+ */
+void generate_signal_field(fftw_complex *out, enum DATA_RATE data_rate, int length);
+
 #endif

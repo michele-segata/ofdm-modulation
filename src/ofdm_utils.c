@@ -616,3 +616,95 @@ void generate_long_training_sequence(fftw_complex *out) {
 
 }
 
+void sum_samples(fftw_complex *in_a, fftw_complex *in_b, int size_b, int base_index) {
+
+    int i;
+
+    for (i = 0; i < size_b; i++) {
+        in_a[i + base_index][0] += in_b[i][0];
+        in_a[i + base_index][1] += in_b[i][1];
+    }
+
+}
+
+void generate_signal_field(fftw_complex *out, enum DATA_RATE data_rate, int length) {
+
+    struct OFDM_PARAMETERS params, header_params;
+    //data bits of the signal header
+    char *signal_header = (char *) malloc(sizeof(char) * 3);
+
+    //signal header after...
+    //convolutional encoding
+    char *encoded_signal_header = (char *) malloc(sizeof(char) * 6);
+    //interleaving
+    char *interleaved_signal_header = (char *) malloc(sizeof(char) * 6);
+    //BPSK modulation
+    fftw_complex *modulated = fftw_alloc_complex(48);
+    //pilots insertion
+    fftw_complex *pilots = fftw_alloc_complex(53);
+    //mapping to ifft inputs
+    fftw_complex *ifft = fftw_alloc_complex(64);
+    //IFFT (time domain samples)
+    fftw_complex *time = fftw_alloc_complex(64);
+
+    //get parameters for payload datarate
+    params = get_ofdm_parameter(data_rate);
+    //header is transmitted at lowest possible datarate
+    header_params = get_ofdm_parameter(BW_20_DR_6_MBPS);
+
+    int i;
+    //first 4 bits represent the modulation and coding scheme
+    set_bit(&signal_header[0], 7, get_bit(params.signal_rate, 3));
+    set_bit(&signal_header[0], 6, get_bit(params.signal_rate, 2));
+    set_bit(&signal_header[0], 5, get_bit(params.signal_rate, 1));
+    set_bit(&signal_header[0], 4, get_bit(params.signal_rate, 0));
+    //5th bit is reserved and must be set to 0
+    set_bit(&signal_header[0], 3, 0);
+    //then 12 bits represent the length
+    set_bit(&signal_header[0], 2, get_bit(length, 0));
+    set_bit(&signal_header[0], 1, get_bit(length, 1));
+    set_bit(&signal_header[0], 0, get_bit(length, 2));
+    set_bit(&signal_header[1], 7, get_bit(length, 3));
+    set_bit(&signal_header[1], 6, get_bit(length, 4));
+    set_bit(&signal_header[1], 5, get_bit(length, 5));
+    set_bit(&signal_header[1], 4, get_bit(length, 6));
+    set_bit(&signal_header[1], 3, get_bit(length, 7));
+    set_bit(&signal_header[1], 2, get_bit(length, 8));
+    set_bit(&signal_header[1], 1, get_bit(length, 9));
+    set_bit(&signal_header[1], 0, get_bit(length, 10));
+    set_bit(&signal_header[2], 7, get_bit(length, 11));
+    //18-th bit is the parity bit for the first 17 bits
+    set_bit(&signal_header[2], 6, compute_even_parity(signal_header, 0, 17));
+    //last 6 bits must be set to 0
+    for (i = 0; i < 6; i++) {
+        set_bit(&signal_header[2], i, 0);
+    }
+
+    //now perform convolutional encoding (scrambling is not needed)
+    convolutional_encoding(signal_header, encoded_signal_header, 3);
+    //interleaving
+    interleave(encoded_signal_header, interleaved_signal_header, 6, header_params.n_cbps, header_params.n_bpsc);
+    //modulation
+    modulate(interleaved_signal_header, 6, BW_20_DR_6_MBPS, modulated);
+    //insert pilot sub carriers (symbol index = 0, SIGNAL header is the first OFDM symbol)
+    insert_pilots(modulated, pilots, 0);
+    //mapping OFDM to IFFT inputs
+    map_ofdm_to_ifft(pilots, ifft);
+    //perform IFFT
+    perform_ifft(ifft, time);
+    //normalize signal power
+    normalize_ifft_output(time, 64, 64);
+    //extend with cyclic prefix
+    add_cyclic_prefix(time, 64, out, 81, 16);
+    //apply window function
+    apply_window_function(out, 81);
+
+    fftw_free(modulated);
+    fftw_free(pilots);
+    fftw_free(ifft);
+    fftw_free(time);
+    free(signal_header);
+    free(encoded_signal_header);
+    free(interleaved_signal_header);
+
+}
