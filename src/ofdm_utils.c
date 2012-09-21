@@ -119,7 +119,7 @@ void convolutional_encoding(const char *in, char *out, int size) {
 
 }
 
-void pucturing(const char *in, char *out, int size, enum CODING_RATE rate) {
+void puncturing(const char *in, char *out, int size, enum CODING_RATE rate) {
 
     //index of current input bit
     int i;
@@ -486,7 +486,7 @@ struct TX_PARAMETERS get_tx_parameters(enum DATA_RATE data_rate, int psdu_size) 
     //compute number of padding bits (17-13)
     tx_params.n_pad = tx_params.n_data - (16 + 8 * psdu_size + 6);
     //number of data bytes
-    tx_params.n_data_bytes = tx_params.n_data_bytes / 8;
+    tx_params.n_data_bytes = tx_params.n_data / 8;
     //number of data bytes after encoding and puncturing
     switch (ofdm_params.coding_rate) {
     case RATE_1_2:
@@ -789,7 +789,7 @@ void generate_data_field(const char *psdu, int length, enum DATA_RATE data_rate,
     int n_pad;
 
     //compute number of symbols (17-11)
-    n_sym = (int)ceil((16 + 8 * length + 6) / (double)params.n_dbps);
+    n_sym = (int) ceil((16 + 8 * length + 6) / (double) params.n_dbps);
     //compute number of bits of the data field (17-12)
     n_data = n_sym * params.n_dbps;
     //compute number of padding bits (17-13)
@@ -797,7 +797,7 @@ void generate_data_field(const char *psdu, int length, enum DATA_RATE data_rate,
 
     //alloc data
     *data_length = n_data / 8;
-    *data = (char *)calloc(*data_length, sizeof(char));
+    *data = (char *) calloc(*data_length, sizeof(char));
 
     //calloc function already sets all elements to 0. we just need to copy psdu after first 16 service bits
     memcpy(*data + 2, psdu, length);

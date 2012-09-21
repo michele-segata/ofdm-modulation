@@ -252,7 +252,7 @@ void convolutional_encoding(const char *in, char *out, int size);
  * size * 3 / 4, for r = 3/4 it is size * 2 / 3
  * \param rate coding rate (i.e., 2/3 or 3/4)
  */
-void pucturing(const char *in, char *out, int size, enum CODING_RATE rate);
+void puncturing(const char *in, char *out, int size, enum CODING_RATE rate);
 
 /**
  * Perform the interleaving of a set of data bits
