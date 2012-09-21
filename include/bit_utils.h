@@ -28,6 +28,27 @@
 #define ERR_INVALID_FORMAT   -2
 
 /**
+ * Change the endianless of a byte. If a little endian
+ * byte is given, it is transformed to a big endian byte
+ * and vice versa.
+ *
+ * \param b the byte
+ * \return the byte b with changed endianless
+ */
+char change_endianless(char b);
+
+/**
+ * Change the endianless of a stream of bytes.
+ *
+ * \param in the input byte stream
+ * \param size number of octects in b
+ * \param out the output byte stream. it can also be
+ * equal to "in" and the input byte stream will be
+ * simply overwritten
+ */
+void change_array_endianless(const char *in, int size, char *out);
+
+/**
  * Print the bit string composing one byte
  *
  * \param b the byte to print
@@ -41,6 +62,14 @@ void print_bits(char b);
  * \param size the length of the array
  */
 void print_bits_array(const char *b, int size);
+
+/**
+ * Print the hex string composing a byte array
+ *
+ * \param b the byte array to print
+ * \param size the length of the array
+ */
+void print_hex_array(const char *b, int size);
 
 /**
  * Print an array of complex samples
@@ -116,6 +145,27 @@ char get_polynomial(char reg, char generator, int size);
  * of an error
  */
 int read_bits_from_file(const char *filename, char *bytes, int size);
+
+/**
+ * Read a hex-string from a file.
+ * The file can also contain comments, determined by a # at the
+ * beginning of the line. Each hex value or group of values can be
+ * separated by spaces or new line.
+ * For example:
+ *
+ * #this is a sample hex file
+ * 1b3f45da12 30b9
+ * 4c6f
+ *
+ * is a valid hex file. The function will read 9 bytes
+ *
+ * \param filename the file to read
+ * \param bytes array where to store the read hex values
+ * \param size maximum size of the bytes array
+ * \return the number of bytes read, or -1 in case
+ * of an error
+ */
+int read_hex_from_file(const char *filename, char *bytes, int size);
 
 /**
  * Return the integer value of a group of bits inside a bit

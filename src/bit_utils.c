@@ -24,6 +24,28 @@
 #include <stdio.h>
 #include <assert.h>
 
+char change_endianless(char b) {
+
+    char o;
+    int i;
+
+    for (i = 0; i <= 7; i++) {
+        set_bit(&o, 7 - i, get_bit(b, i));
+    }
+    return o;
+
+}
+
+void change_array_endianless(const char *in, int size, char *out) {
+
+    int i;
+
+    for (i = 0; i < size; i++) {
+        out[i] = change_endianless(in[i]);
+    }
+
+}
+
 void print_bits(char b) {
     int i;
     for (i = 7; i >= 0; i--) {
@@ -35,6 +57,15 @@ void print_bits_array(const char *b, int size) {
     int i;
     for (i = 0; i < size; i++) {
         print_bits(b[i]);
+        printf(" ");
+    }
+}
+
+void print_hex_array(const char *b, int size) {
+    int i;
+    for (i = 0; i < size; i++) {
+        printf("%02x ", (unsigned char)b[i]);
+        fflush(stdout);
     }
 }
 
@@ -157,6 +188,121 @@ int read_bits_from_file(const char *filename, char *bytes, int size) {
                     return ERR_INVALID_FORMAT;
                 }
 
+                break;
+
+            }
+
+        } else {
+            //if we are in comment mode and the character is \n
+            //just exit from comment mode
+            if (in == '\n') {
+                comment = 0;
+            }
+        }
+
+    }
+
+    fclose(f);
+
+    return bytes_read;
+
+}
+
+int read_hex_from_file(const char *filename, char *bytes, int size) {
+
+    //number of read bytes
+    int bytes_read = 0;
+    //we are reading the first four bits (the first hex digit)
+    int first_digit = 1;
+    //current hex we are reading
+    char hex[3];
+    //parsed value
+    unsigned int value;
+    //character read from the file
+    char in;
+    //found a comment, should skip till end of line
+    int comment = 0;
+    //file to be read
+    FILE *f = fopen(filename, "r");
+
+    if (!f) {
+        return ERR_CANNOT_READ_FILE;
+    }
+
+    hex[2] = '\0';
+
+    while (fscanf(f, "%c", &in) != EOF) {
+
+        //we have no enough space for new data. so return what we
+        //have read until now
+        if (bytes_read == size) {
+            break;
+        }
+
+        //do all checks only if we are not in comment.
+        //if we are in comment just skip the character
+        //but after checking that it is not a newline
+        if (!comment) {
+
+            switch (in) {
+
+            case ' ':
+
+                if (!first_digit) {
+                    //we found a space in the middle of a hex value
+                    //wrong format
+                    fclose(f);
+                    return ERR_INVALID_FORMAT;
+                }
+
+                break;
+
+            case '#':
+
+                if (!first_digit) {
+                    //we found a comment character in the middle of a hex value
+                    //wrong format
+                    fclose(f);
+                    return ERR_INVALID_FORMAT;
+                }
+
+                //set comment mode
+                comment = 1;
+
+                break;
+
+            case '\n':
+
+                if (!first_digit) {
+                    //line breaks before ending a hex value
+                    //wrong format
+                    fclose(f);
+                    return ERR_INVALID_FORMAT;
+                }
+
+                break;
+
+            default:
+
+                //check validity of the character
+                if ((in >= '0' && in <= '9') || (in >= 'a' && in <= 'f') || (in >= 'A' && in <= 'F')) {
+                    if (first_digit) {
+                        //if it is the first digit just save it
+                        hex[0] = in;
+                        first_digit = 0;
+                    } else {
+                        //otherwise parse the value and increment number of bytes read
+                        hex[1] = in;
+                        first_digit = 1;
+                        sscanf(hex, "%x", &value);
+                        bytes[bytes_read] = (char)value;
+                        bytes_read++;
+                    }
+                }
+                else {
+                    fclose(f);
+                    return ERR_INVALID_FORMAT;
+                }
                 break;
 
             }
