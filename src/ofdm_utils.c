@@ -22,6 +22,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include "ofdm_utils.h"
 #include "bit_utils.h"
@@ -621,6 +622,7 @@ void sum_samples(fftw_complex *in_a, fftw_complex *in_b, int size_b, int base_in
     int i;
 
     for (i = 0; i < size_b; i++) {
+
         in_a[i + base_index][0] += in_b[i][0];
         in_a[i + base_index][1] += in_b[i][1];
     }
@@ -707,4 +709,39 @@ void generate_signal_field(fftw_complex *out, enum DATA_RATE data_rate, int leng
     free(encoded_signal_header);
     free(interleaved_signal_header);
 
+}
+
+void generate_data_field(const char *psdu, int length, enum DATA_RATE data_rate, char **data, int *data_length) {
+
+    //get modulation scheme parameter for computing padding size
+    struct OFDM_PARAMETERS params = get_ofdm_parameter(data_rate);
+    //number of OFDM symbols
+    int n_sym;
+    //number of bits of the data field
+    int n_data;
+    //number of bits of the padding
+    int n_pad;
+
+    //compute number of symbols (17-11)
+    n_sym = (int)ceil((16 + 8 * length + 6) / (double)params.n_dbps);
+    //compute number of bits of the data field (17-12)
+    n_data = n_sym * params.n_dbps;
+    //compute number of padding bits (17-13)
+    n_pad = n_data - (16 + 8 * length + 6);
+
+    //alloc data
+    *data_length = n_data / 8;
+    *data = (char *)calloc(*data_length, sizeof(char));
+
+    //calloc function already sets all elements to 0. we just need to copy psdu after first 16 service bits
+    memcpy(*data + 2, psdu, length);
+
+}
+
+void zero_samples(fftw_complex *samples, int size) {
+    int i;
+    for (i = 0; i < size; i++) {
+        samples[i][0] = 0;
+        samples[i][1] = 0;
+    }
 }

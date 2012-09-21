@@ -367,4 +367,30 @@ void sum_samples(fftw_complex *in_a, fftw_complex *in_b, int size_b, int base_in
  */
 void generate_signal_field(fftw_complex *out, enum DATA_RATE data_rate, int length);
 
+/**
+ * Prepare a set of data bits (i.e., the PSDU) for being processed by
+ * OFDM encoding procedures, i.e., the DATA field.
+ * This function adds the 16 (zero) SERVICE bits at the beginning, 6
+ * (zero) tail bits at the end plus zero padding bits to yield an
+ * integer number of OFDM symbols, as indicated in 17.3.5.3
+ *
+ * \param psdu array of bytes containing the PSDU
+ * \param length number of octets in the PSDU
+ * \param data_rate the desired data rate (i.e., the coding scheme)
+ * that will be used for encoding
+ * \param data pointer to a non-alloced array where data field will
+ * be stored. The array will be malloced by the procedure
+ * \param data_length pointer to an integer where to store the size of
+ * the data field, in bytes
+ */
+void generate_data_field(const char *psdu, int length, enum DATA_RATE data_rate, char **data, int *data_length);
+
+/**
+ * Set the content of an array of complex samples to 0
+ *
+ * \param samples array of complex samples
+ * \param size size of the array
+ */
+void zero_samples(fftw_complex *samples, int size);
+
 #endif
