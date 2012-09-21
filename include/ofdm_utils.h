@@ -24,6 +24,39 @@
 
 #include <fftw3.h>
 
+//number of data subcarriers
+#define N_DATA_SUBCARRIERS      48
+//number of pilot subcarriers
+#define N_PILOT_SUBCARRIERS     4
+//total number of subcarriers (+1 for DC)
+#define N_TOTAL_SUBCARRIERS     (N_DATA_SUBCARRIERS + N_PILOT_SUBCARRIERS + 1)
+//(I)FFT size
+#define FFT_SIZE                64
+//length of the cyclic prefix (samples)
+#define CYCLIC_PREFIX_SIZE      16
+//length of an OFDM symbol (samples)
+#define OFDM_SYMBOL_SIZE        (FFT_SIZE + CYCLIC_PREFIX_SIZE)
+//extended ofdm symbol size (for merging with other symbols)
+#define EXT_OFDM_SYMBOL_SIZE    (OFDM_SYMBOL_SIZE + 1)
+//short training sequence size
+#define SHORT_TRAINING_SIZE     (2 * OFDM_SYMBOL_SIZE)
+//extended short training sequence size
+#define EXT_SHORT_TRAINING_SIZE (SHORT_TRAINING_SIZE + 1)
+//long training sequence size
+#define LONG_TRAINING_SIZE      (2 * OFDM_SYMBOL_SIZE)
+//extended long training sequence size
+#define EXT_LONG_TRAINING_SIZE  (LONG_TRAINING_SIZE + 1)
+//length of the preamble (samples)
+#define PREAMBLE_SIZE           (4 * OFDM_SYMBOL_SIZE)
+//extended preamble size
+#define EXT_PREAMBLE_SIZE       (PREAMBLE_SIZE + 1)
+//length of the signal header (samples)
+#define SIGNAL_SIZE             OFDM_SYMBOL_SIZE
+//extended preamble size
+#define EXT_SIGNAL_SIZE         (SIGNAL_SIZE + 1)
+//number of samples for an OFDM frame (function of number of DATA symbols)
+#define FRAME_SIZE(n)           (((5 + n) * OFDM_SYMBOL_SIZE) + 1)
+
 /**
  * Define available data rates
  */
