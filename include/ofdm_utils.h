@@ -112,6 +112,30 @@ struct OFDM_PARAMETERS {
 };
 
 /**
+ * Struct containing transmission parameters,
+ * such as PSDU size, number of OFDM symbols,
+ * etc...
+ */
+struct TX_PARAMETERS {
+    //data rate used for transmission
+    enum DATA_RATE          data_rate;
+    //PSDU size in bytes
+    int                     psdu_size;
+    //number of OFDM symbols (17-11)
+    int                     n_sym;
+    //number of data bits in the DATA field, including service and padding (17-12)
+    int                     n_data;
+    //number of padding bits in the DATA field (17-13)
+    int                     n_pad;
+    //transmission duration in microseconds
+    int                     duration;
+    //number of data bytes in the DATA field, including service and padding
+    int                     n_data_bytes;
+    //number of data bytes after encoding
+    int                     n_encoded_data_bytes;
+};
+
+/**
  * Defines subcarriers polarities
  */
 static const double subcarrier_polarities[] = {1,1,1,1, -1,-1,-1,1, -1,-1,-1,-1, 1,1,-1,1, -1,-1,1,1, -1,1,1,-1, 1,1,1,1, 1,1,-1,1,
@@ -245,6 +269,18 @@ void insert_pilots(fftw_complex *in, fftw_complex *out, int symbol_index);
  *
  */
 struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate);
+
+/**
+ * Given the desired datarate and the size of the PSDU, return
+ * the set of transmission parameters, number of OFDM symbols,
+ * transmission duration, etc.
+ *
+ * \param data_rate the desired datarate
+ * \param psdu_size size of the PSDU in bytes
+ * \return a struct with all the tx parameters
+ *
+ */
+struct TX_PARAMETERS get_tx_parameters(enum DATA_RATE data_rate, int psdu_size);
 
 /**
  * Maps the 53 frequency domain I,Q values modulated using OFDM

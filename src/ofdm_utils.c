@@ -469,6 +469,72 @@ struct OFDM_PARAMETERS get_ofdm_parameter(enum DATA_RATE data_rate) {
 
 }
 
+struct TX_PARAMETERS get_tx_parameters(enum DATA_RATE data_rate, int psdu_size) {
+
+    //returned tx parameters
+    struct TX_PARAMETERS tx_params;
+    //ofdm parameters
+    struct OFDM_PARAMETERS ofdm_params = get_ofdm_parameter(data_rate);
+
+    tx_params.data_rate = data_rate;
+    tx_params.psdu_size = psdu_size;
+
+    //compute number of symbols (17-11)
+    tx_params.n_sym = (int) ceil((16 + 8 * psdu_size + 6) / (double) ofdm_params.n_dbps);
+    //compute number of bits of the data field (17-12)
+    tx_params.n_data = tx_params.n_sym * ofdm_params.n_dbps;
+    //compute number of padding bits (17-13)
+    tx_params.n_pad = tx_params.n_data - (16 + 8 * psdu_size + 6);
+    //number of data bytes
+    tx_params.n_data_bytes = tx_params.n_data_bytes / 8;
+    //number of data bytes after encoding and puncturing
+    switch (ofdm_params.coding_rate) {
+    case RATE_1_2:
+        tx_params.n_encoded_data_bytes = tx_params.n_data_bytes * 2;
+        break;
+    case RATE_3_4:
+        tx_params.n_encoded_data_bytes = tx_params.n_data_bytes * 4 / 3;
+        break;
+    case RATE_2_3:
+        tx_params.n_encoded_data_bytes = tx_params.n_data_bytes * 3 / 2;
+        break;
+    }
+
+    switch (data_rate) {
+
+    case BW_10_DR_3_MBPS:
+    case BW_10_DR_4_5_MBPS:
+    case BW_10_DR_6_MBPS:
+    case BW_10_DR_9_MBPS:
+    case BW_10_DR_12_MBPS:
+    case BW_10_DR_18_MBPS:
+    case BW_10_DR_24_MBPS:
+    case BW_10_DR_27_MBPS:
+
+        //for the 10 MHz bandwidth, symbol duration is 8 microseconds
+        tx_params.duration = (5 + tx_params.n_sym) * 8;
+
+        break;
+
+    case BW_20_DR_6_MBPS:
+    case BW_20_DR_9_MBPS:
+    case BW_20_DR_12_MBPS:
+    case BW_20_DR_18_MBPS:
+    case BW_20_DR_24_MBPS:
+    case BW_20_DR_36_MBPS:
+    case BW_20_DR_48_MBPS:
+    case BW_20_DR_54_MBPS:
+
+        //for the 20 MHz bandwidth, symbol duration is 4 microseconds
+        tx_params.duration = (5 + tx_params.n_sym) * 4;
+
+        break;
+    }
+
+    return tx_params;
+
+}
+
 void map_ofdm_to_ifft(fftw_complex *ofdm, fftw_complex *ifft) {
 
     // out 0        must be 0
