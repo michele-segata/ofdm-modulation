@@ -60,8 +60,9 @@ void print_bits(char b);
  *
  * \param b the byte array to print
  * \param size the length of the array
+ * \param separator the separator to be used between each byte
  */
-void print_bits_array(const char *b, int size);
+void print_bits_array(const char *b, int size, char separator);
 
 /**
  * Print the hex string composing a byte array

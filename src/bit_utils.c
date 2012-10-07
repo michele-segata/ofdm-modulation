@@ -53,11 +53,11 @@ void print_bits(char b) {
     }
 }
 
-void print_bits_array(const char *b, int size) {
+void print_bits_array(const char *b, int size, char separator) {
     int i;
     for (i = 0; i < size; i++) {
         print_bits(b[i]);
-        printf(" ");
+        printf("%c", separator);
     }
 }
 
