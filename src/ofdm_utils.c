@@ -67,6 +67,23 @@ void scramble_with_initial_state(const char *in, char *out, int size, char initi
 
 }
 
+void reset_tail_bits(char *scrambled_data, int size, int n_pad) {
+
+    //index of the first bit of the TAIL field
+    int tail_index;
+    //index of current bit
+    int i;
+
+    tail_index = (size * 8) - n_pad - 6;
+
+    for (i = 0; i < 6; i++) {
+        int i_byte = (tail_index + i) / 8;
+        int i_bit = 7 - (tail_index + i) % 8;
+        set_bit(&scrambled_data[i_byte], i_bit, 0);
+    }
+
+}
+
 void convolutional_encoding(const char *in, char *out, int size) {
 
     //generator polinomials, as defined in 17.3.5.5

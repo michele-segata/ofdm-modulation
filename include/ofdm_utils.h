@@ -222,6 +222,19 @@ void scramble(const char *in, char *out, int size);
 void scramble_with_initial_state(const char *in, char *out, int size, char initial_state);
 
 /**
+ * Set to 0 the TAIL bits AFTER the scrambling has been
+ * performed, as indicated in 802.11-2007, 17.3.5.2.
+ *
+ * \param scrambled_data the DATA bits after scrambling. Tail
+ * bits will be set to 0 "in place"
+ * \param size size (in bytes) of the scrambled_data array
+ * \param n_pad number of bits that have been appended
+ * for padding, used to locate the six TAIL bits starting
+ * from the end of the scrambled DATA field
+ */
+void reset_tail_bits(char *scrambled_data, int size, int n_pad);
+
+/**
  * Perform the convolutional encoding of a set of bytes, as
  * mandated by 802.11-2007, 17.3.5.5.
  * The encoder uses the two generator polynomial 133 and 171
