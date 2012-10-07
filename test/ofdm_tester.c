@@ -48,7 +48,7 @@ int main() {
     int symbol;
 
     //read the psdu from text file
-    int rb = read_hex_from_file("misc/psdu.hex", psdu, 1000);
+    int rb = read_hex_from_file("misc/psdu-2012.hex", psdu, 1000);
 
     if (rb == ERR_CANNOT_READ_FILE) {
         printf("Cannot read file \"%s\": file not found?\n", "misc/data.bits");
@@ -90,6 +90,8 @@ int main() {
 
     //first step, scrambling
     scramble_with_initial_state(data, scrambled_data, len, 0x5D);
+    //reset tail bits
+    reset_tail_bits(scrambled_data, len, tx_params.n_pad);
     //encoding
     convolutional_encoding(scrambled_data, encoded_data, len);
     //puncturing
