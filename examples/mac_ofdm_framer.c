@@ -149,6 +149,9 @@ int main(int argc, char **argv) {
             fwrite(&val, sizeof(float), 1, f);
         }
 
+        //flush the output file
+        fflush(f);
+
         //these will be realloced at next cycle
         free(psdu);
         free(data);
