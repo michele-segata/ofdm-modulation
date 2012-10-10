@@ -10,5 +10,5 @@ endif (FFTW_FOUND)
 
 target_link_libraries(ofdm_preamble ${LIBS})
 
-add_library(ofdm_lib bit_utils.c ofdm_utils.c)
+add_library(ofdm_lib bit_utils.c ofdm_utils.c mac_utils.c)
 target_link_libraries(ofdm_lib ${LIBS})
