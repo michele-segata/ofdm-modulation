@@ -147,6 +147,12 @@ void puncturing(const char *in, char *out, int size, enum CODING_RATE rate) {
     //should we drop current bit or not?
     int drop;
 
+    //if rate is 1/2, then we have to keep all the bits produced by the encoder
+    if (rate == RATE_1_2) {
+        memcpy(out, in, sizeof(char) * size);
+        return;
+    }
+
     //cycle through all input bits
     for (i = 0; i < size * 8; i++) {
 
@@ -154,6 +160,7 @@ void puncturing(const char *in, char *out, int size, enum CODING_RATE rate) {
         drop = 0;
 
         switch (rate) {
+
         case RATE_3_4:
 
             //period of code rate 3/4 is 6
