@@ -160,6 +160,9 @@ int main(int argc, char **argv) {
         free(punctured_data);
         free(interleaved_data);
 
+        //increment the sequence number
+        sequence_number++;
+
     }
 
     fclose(f);
