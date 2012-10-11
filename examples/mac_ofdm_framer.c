@@ -85,8 +85,8 @@ int main(int argc, char **argv) {
 
         generate_mac_data_frame(msdu, rb, &psdu, &psdu_length, (char) sequence_number);
 
-        //swap the endianless of the psdu
-        change_array_endianless(psdu, psdu_length, psdu);
+        //swap the endianness of the psdu
+        change_array_endianness(psdu, psdu_length, psdu);
         //generate the OFDM data field, adding service field and pad bits
         generate_data_field(psdu, psdu_length, params.data_rate, &data, &len);
 

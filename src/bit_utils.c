@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <assert.h>
 
-char change_endianless(char b) {
+char change_endianness(char b) {
 
     char o;
     int i;
@@ -36,12 +36,12 @@ char change_endianless(char b) {
 
 }
 
-void change_array_endianless(const char *in, int size, char *out) {
+void change_array_endianness(const char *in, int size, char *out) {
 
     int i;
 
     for (i = 0; i < size; i++) {
-        out[i] = change_endianless(in[i]);
+        out[i] = change_endianness(in[i]);
     }
 
 }

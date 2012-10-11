@@ -63,9 +63,9 @@ unsigned int crc32(const char *buf, size_t len) {
 //#define ENDLSS 1
 
 #ifdef ENDLSS
-#define ENDIANESS(x) change_endianless(x)
+#define ENDIANNESS(x) change_endianness(x)
 #else
-#define ENDIANESS(x) x
+#define ENDIANNESS(x) x
 #endif
 
 void generate_mac_data_frame(const char *msdu, int msdu_size, char **psdu, int *psdu_size, char seq) {
@@ -75,32 +75,32 @@ void generate_mac_data_frame(const char *msdu, int msdu_size, char **psdu, int *
     //frame check sequence
     unsigned int fcs;
 
-    header.frame_control[0] = ENDIANESS(0x08);//0x20; //00000100 00100000  indicate DATA frame (LOL, not), to_ds, from_ds, more frag, retry
-    header.frame_control[1] = ENDIANESS(0x02);//0x40; //all other flags, unutilized //00000010 01000000
+    header.frame_control[0] = ENDIANNESS(0x08);//0x20; //00000100 00100000  indicate DATA frame (LOL, not), to_ds, from_ds, more frag, retry
+    header.frame_control[1] = ENDIANNESS(0x02);//0x40; //all other flags, unutilized //00000010 01000000
 
-    header.duration[0] = ENDIANESS(0x00); //TODO: set accordingly to payload
-    header.duration[1] = ENDIANESS(0x2e); //0x74; //2e = 00101110 -> 01110100 -> 74
+    header.duration[0] = ENDIANNESS(0x00); //TODO: set accordingly to payload
+    header.duration[1] = ENDIANNESS(0x2e); //0x74; //2e = 00101110 -> 01110100 -> 74
 
-    header.address1[0] = ENDIANESS(0x00);
-    header.address1[1] = ENDIANESS(0x60); //change_endianless(0x60);
-    header.address1[2] = ENDIANESS(0x08); //change_endianless(0x08);
-    header.address1[3] = ENDIANESS(0xcd); //change_endianless(0xcd);
-    header.address1[4] = ENDIANESS(0x37); //change_endianless(0x37);
-    header.address1[5] = ENDIANESS(0xa6); //change_endianless(0xa6);
+    header.address1[0] = ENDIANNESS(0x00);
+    header.address1[1] = ENDIANNESS(0x60);
+    header.address1[2] = ENDIANNESS(0x08);
+    header.address1[3] = ENDIANNESS(0xcd);
+    header.address1[4] = ENDIANNESS(0x37);
+    header.address1[5] = ENDIANNESS(0xa6);
 
-    header.address2[0] = ENDIANESS(0x00); //change_endianless(0x00);
-    header.address2[1] = ENDIANESS(0x20); //change_endianless(0x20);
-    header.address2[2] = ENDIANESS(0xd6); //change_endianless(0xd6);
-    header.address2[3] = ENDIANESS(0x01); //change_endianless(0x01);
-    header.address2[4] = ENDIANESS(0x3c); //change_endianless(0x3c);
-    header.address2[5] = ENDIANESS(0xf1); //change_endianless(0xf1);
+    header.address2[0] = ENDIANNESS(0x00);
+    header.address2[1] = ENDIANNESS(0x20);
+    header.address2[2] = ENDIANNESS(0xd6);
+    header.address2[3] = ENDIANNESS(0x01);
+    header.address2[4] = ENDIANNESS(0x3c);
+    header.address2[5] = ENDIANNESS(0xf1);
 
-    header.address3[0] = ENDIANESS(0x00); //change_endianless(0x00);
-    header.address3[1] = ENDIANESS(0x60); //change_endianless(0x60);
-    header.address3[2] = ENDIANESS(0x08); //change_endianless(0x08);
-    header.address3[3] = ENDIANESS(0xad); //change_endianless(0xad);
-    header.address3[4] = ENDIANESS(0x3b); //change_endianless(0x3b);
-    header.address3[5] = ENDIANESS(0xaf); //change_endianless(0xaf);
+    header.address3[0] = ENDIANNESS(0x00);
+    header.address3[1] = ENDIANNESS(0x60);
+    header.address3[2] = ENDIANNESS(0x08);
+    header.address3[3] = ENDIANNESS(0xad);
+    header.address3[4] = ENDIANNESS(0x3b);
+    header.address3[5] = ENDIANNESS(0xaf);
 
     //destination broadcast
 //    header.address3[0] = 0xff;
@@ -121,11 +121,11 @@ void generate_mac_data_frame(const char *msdu, int msdu_size, char **psdu, int *
     for (i = 0; i < 4; i++) {
         set_bit(&seq_msbs, i, get_bit(seq, i + 4));
     }
-    header.sequence[0] = ENDIANESS(seq_lsbs);
-    header.sequence[1] = ENDIANESS(seq_msbs);
+    header.sequence[0] = ENDIANNESS(seq_lsbs);
+    header.sequence[1] = ENDIANNESS(seq_msbs);
 
 #ifdef ENDLSS
-    change_array_endianless(msdu, msdu_size, msdu);
+    change_array_endianness(msdu, msdu_size, msdu);
 #endif
 
     //header size is 24, plus 4 for FCS means 28 bytes

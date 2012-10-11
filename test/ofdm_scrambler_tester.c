@@ -41,8 +41,8 @@ int main() {
         return 0;
     }
 
-    //swap the endianless of the psdu
-    change_array_endianless(psdu, rb, psdu);
+    //swap the endianness of the psdu
+    change_array_endianness(psdu, rb, psdu);
 
     //generate the OFDM data field, adding service field and pad bits
     generate_data_field(psdu, rb, params.data_rate, &data, &len);

@@ -28,17 +28,17 @@
 #define ERR_INVALID_FORMAT   -2
 
 /**
- * Change the endianless of a byte. If a little endian
+ * Change the endianness of a byte. If a little endian
  * byte is given, it is transformed to a big endian byte
  * and vice versa.
  *
  * \param b the byte
- * \return the byte b with changed endianless
+ * \return the byte b with changed endianness
  */
-char change_endianless(char b);
+char change_endianness(char b);
 
 /**
- * Change the endianless of a stream of bytes.
+ * Change the endianness of a stream of bytes.
  *
  * \param in the input byte stream
  * \param size number of octects in b
@@ -46,7 +46,7 @@ char change_endianless(char b);
  * equal to "in" and the input byte stream will be
  * simply overwritten
  */
-void change_array_endianless(const char *in, int size, char *out);
+void change_array_endianness(const char *in, int size, char *out);
 
 /**
  * Print the bit string composing one byte
