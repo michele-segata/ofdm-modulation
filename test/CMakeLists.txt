@@ -20,11 +20,14 @@ endif()
 add_executable(ofdm_data_tester ofdm_data_tester.c)
 # scrambler tester
 add_executable(ofdm_scrambler_tester ofdm_scrambler_tester.c)
+# convolutional encoder tester
+add_executable(ofdm_convolutional_encoder_tester ofdm_convolutional_encoder_tester.c)
 
 add_executable(ofdm_tester ofdm_tester.c)
 #add_executable(ofdm_puncturing_test ofdm_puncturing.c)
 
 target_link_libraries(ofdm_data_tester ofdm_lib ${LIBS})
 target_link_libraries(ofdm_scrambler_tester ofdm_lib ${LIBS})
+target_link_libraries(ofdm_convolutional_encoder_tester ofdm_lib ${LIBS})
 target_link_libraries(ofdm_tester ofdm_lib ${LIBS})
 #target_link_libraries(ofdm_puncturing_test ofdm_lib)
