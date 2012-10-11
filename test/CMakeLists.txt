@@ -6,9 +6,15 @@ if (FFTW_FOUND)
   set(LIBS ${LIBS} ${FFTW_LIBRARIES})
 endif (FFTW_FOUND)
 
-# Add efence link
-find_library(EFENCE_LIBRARY NAMES efence PATHS /opt/local/lib/)
-set(LIBS ${LIBS} ${EFENCE_LIBRARY})
+# enable/disable electric fence library
+if (ENABLE_EFENCE)
+    # Add efence link
+    find_library(EFENCE_LIBRARY NAMES efence PATHS /opt/local/lib/)
+    set(LIBS ${LIBS} ${EFENCE_LIBRARY})
+    message(STATUS "Configuring project with electric fence library")
+else()
+    message(STATUS "Configuring project without electric fence library. Set -DENABLE_EFENCE for linking project against efence")
+endif()
 
 # DATA field tester
 add_executable(ofdm_data_tester ofdm_data_tester.c)
