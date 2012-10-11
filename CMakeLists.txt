@@ -25,3 +25,9 @@ find_package (fftw3 REQUIRED)
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(examples)
+
+enable_testing()
+
+add_test(data_field_tester             ../test/tester.sh build/ofdm_data_tester                     "misc/data-2012.bits")
+add_test(scrambler_tester              ../test/tester.sh build/ofdm_scrambler_tester                "misc/scrambled-2012.bits")
+add_test(convolutional_encoder_tester  ../test/tester.sh build/ofdm_convolutional_encoder_tester    "misc/encoded_3_4-2012.bits")
