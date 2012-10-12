@@ -6,7 +6,18 @@
 #include "ofdm_utils.h"
 #include "bit_utils.h"
 
-int main() {
+/**
+ * This test takes in input the whole sample PSDU from 802.11-2012 annex L,
+ * and performs all the OFDM encoding steps down to the complex time domain
+ * representation of the whole signal. Output should be checked against
+ * tables from L-22 to L-30.
+ */
+int main(int argc, char **argv) {
+
+    if (argc != 2) {
+        printf("error: missing input file\n");
+        return 1;
+    }
 
     //psdu loaded from data file
     char psdu[1000];
@@ -48,10 +59,10 @@ int main() {
     int symbol;
 
     //read the psdu from text file
-    int rb = read_hex_from_file("misc/psdu-2012.hex", psdu, 1000);
+    int rb = read_hex_from_file(argv[1], psdu, 1000);
 
     if (rb == ERR_CANNOT_READ_FILE) {
-        printf("Cannot read file \"%s\": file not found?\n", "misc/data.bits");
+        printf("Cannot read file \"%s\": file not found?\n", argv[1]);
         return 0;
     }
     if (rb == ERR_INVALID_FORMAT) {
@@ -63,10 +74,6 @@ int main() {
     change_array_endianness(psdu, rb, psdu);
     //generate the OFDM data field, adding service field and pad bits
     generate_data_field(psdu, rb, params.data_rate, &data, &len);
-
-    //print the data field in hex format
-    print_hex_array(data, len);
-    printf("\n");
 
     //get transmission params for the psdu
     tx_params = get_tx_parameters(params.data_rate, rb);
@@ -102,39 +109,17 @@ int main() {
     //now perform modulation for each symbol
     for (symbol = 0; symbol < tx_params.n_sym; symbol++) {
 
-        printf("\nModulating symbols %d of %d:\n", symbol, tx_params.n_sym);
-
         modulate(&interleaved_data[symbol * params.n_cbps / 8], params.n_cbps / 8, params.data_rate, mod);
-
-        printf("Modulated bits (QAM16):\n");
-        print_complex_array(mod, N_DATA_SUBCARRIERS);
-        printf("\n");
 
         insert_pilots(mod, pil, symbol + 1);
 
-        printf("Pilot insertion:\n");
-        print_complex_array(pil, N_TOTAL_SUBCARRIERS);
-        printf("\n");
-
         map_ofdm_to_ifft(pil, ifft);
-
-        printf("IFFT input:\n");
-        print_complex_array(ifft, FFT_SIZE);
-        printf("\n");
 
         perform_ifft(ifft, time);
         normalize_ifft_output(time, FFT_SIZE, FFT_SIZE);
 
-        printf("Time samples:\n");
-        print_complex_array(time, FFT_SIZE);
-        printf("\n");
-
         add_cyclic_prefix(time, FFT_SIZE, ext, EXT_OFDM_SYMBOL_SIZE, CYCLIC_PREFIX_SIZE);
         apply_window_function(ext, EXT_OFDM_SYMBOL_SIZE);
-
-        printf("Time samples i (cyclically extended):\n");
-        print_complex_array(ext, EXT_OFDM_SYMBOL_SIZE);
-        printf("\n");
 
         sum_samples(mod_samples, ext, EXT_OFDM_SYMBOL_SIZE, (5 + symbol) * OFDM_SYMBOL_SIZE);
 
@@ -144,10 +129,6 @@ int main() {
     generate_signal_field(signal, params.data_rate, rb);
     sum_samples(mod_samples, signal, EXT_SIGNAL_SIZE, 4 * OFDM_SYMBOL_SIZE);
 
-    printf("SIGNAL header time samples:\n");
-    print_complex_array(signal, EXT_SIGNAL_SIZE);
-    printf("\n");
-
     //generate short and long training sequences
     generate_short_training_sequence(short_sequence);
     generate_long_training_sequence(long_sequence);
@@ -155,16 +136,27 @@ int main() {
     sum_samples(mod_samples, short_sequence, EXT_SHORT_TRAINING_SIZE, 0);
     sum_samples(mod_samples, long_sequence, EXT_LONG_TRAINING_SIZE, SHORT_TRAINING_SIZE);
 
-    printf("OFDM frame time samples:\n");
-    print_complex_array(mod_samples, FRAME_SIZE(tx_params.n_sym));
-    printf("\n");
-
     int i;
-    printf("float size: %lu\n", sizeof(float));
-    for (i = 0; i < (5 + tx_params.n_sym) * OFDM_SYMBOL_SIZE; i++) {
-        fprintf(stderr, "%d %f %f\n", i, mod_samples[i][0], mod_samples[i][1]);
-    }
+    //print the output frame
+    for (i = 0; i < FRAME_SIZE(tx_params.n_sym); i++) {
+        float iv, qv;
+        iv = (float) mod_samples[i][0];
+        qv = (float) mod_samples[i][1];
 
+        //we have to check if a number is zero, and print it as positive
+        //because otherwise printf will print -0.000, and the example in
+        //the stantard always prints 0.000, so the unit test would fail
+        //only because of formatting
+
+        if (iv < 0 && iv > -1e-4) {
+            iv = 0;
+        }
+        if (qv < 0 && qv > -1e-4) {
+            qv = 0;
+        }
+
+        printf("%d %.3f %.3f\n", i, iv, qv);
+    }
 
     free(data);
     free(scrambled_data);
