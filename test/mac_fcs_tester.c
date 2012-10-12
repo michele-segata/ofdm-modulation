@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 
     unsigned int fcs = crc32(msdu, rb);
 
-    print_hex_array((const char *)&fcs, sizeof(unsigned int));
+    print_hex_array((const char *)&fcs, sizeof(unsigned int), '\n');
     printf("\n");
 
     return 0;

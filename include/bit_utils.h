@@ -69,8 +69,9 @@ void print_bits_array(const char *b, int size, char separator);
  *
  * \param b the byte array to print
  * \param size the length of the array
+ * \param separator the separator to be used between each byte
  */
-void print_hex_array(const char *b, int size);
+void print_hex_array(const char *b, int size, char separator);
 
 /**
  * Print an array of complex samples
