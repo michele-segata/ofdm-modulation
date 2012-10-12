@@ -25,6 +25,8 @@ int main(int argc, char **argv) {
     char *mac_frame;
     //length of the mac frame
     int len;
+    //mac header
+    struct MAC_DATAFRAME_HEADER header;
 
     //read the msdu from text file
     int rb = read_hex_from_file(argv[1], msdu, 1000);
@@ -38,8 +40,11 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+    //generate the default mac header of the sample psdu
+    header = generate_default_mac_header();
+
     //generate mac frame with default parameters
-    generate_mac_data_frame(msdu, rb, &mac_frame, &len, 0);
+    generate_mac_data_frame(msdu, rb, header, &mac_frame, &len);
 
     //output bits and we're done
     print_hex_array(mac_frame, len, '\n');

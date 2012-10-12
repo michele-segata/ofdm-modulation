@@ -132,10 +132,10 @@ struct MAC_DATAFRAME_HEADER generate_mac_header(dbyte frame_control, dbyte durat
 
 }
 
-void generate_mac_data_frame(const char *msdu, int msdu_size, char **psdu, int *psdu_size, char seq) {
+struct MAC_DATAFRAME_HEADER generate_default_mac_header() {
 
-    //mac frame
-    struct MAC_DATAFRAME_HEADER header;
+    struct MAC_DATAFRAME_HEADER hdr;
+
     //frame check sequence
     unsigned int fcs;
 
@@ -146,7 +146,16 @@ void generate_mac_data_frame(const char *msdu, int msdu_size, char **psdu, int *
     construct_dbyte(0xFF, 0xFF, &frame_control);
     construct_dbyte(0xFF, 0xFF, &duration);
 
-    header = generate_mac_header(frame_control, duration, 0, 0, 0, seq);
+    hdr = generate_mac_header(frame_control, duration, 0, 0, 0, 0);
+
+    return hdr;
+
+}
+
+void generate_mac_data_frame(const char *msdu, int msdu_size, struct MAC_DATAFRAME_HEADER header, char **psdu, int *psdu_size) {
+
+    //frame check sequence
+    unsigned int fcs;
 
     //header size is 24, plus 4 for FCS means 28 bytes
     *psdu_size = 28 + msdu_size;

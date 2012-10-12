@@ -54,6 +54,10 @@ int main(int argc, char **argv) {
     fftw_complex *mod_samples;
     //index of data symbol under processing
     int symbol;
+    //fields for the mac header
+    dbyte frame_control, duration;
+    //mac header
+    struct MAC_DATAFRAME_HEADER header;
 
     //fifo output file
     FILE *f = fopen("ofdm.fifo", "ab");
@@ -78,12 +82,22 @@ int main(int argc, char **argv) {
     generate_short_training_sequence(short_sequence);
     generate_long_training_sequence(long_sequence);
 
+    //set the fields for the mac frame that won't change
+    //data field
+    construct_dbyte(0x08, 0x02, &frame_control);
+    //use default duration from standard
+    construct_dbyte(0xFF, 0xFF, &duration);
+
     //read the psdu from stdin
     while (fgets(msdu, 1000, stdin) != NULL) {
 
         int rb = strlen(msdu);
 
-        generate_mac_data_frame(msdu, rb, &psdu, &psdu_length, (char) sequence_number);
+        //generate custom mac header
+        header = generate_mac_header(frame_control, duration, "aa:bb:cc:dd:ee:ff", "aa:bb:cc:dd:ee:ff", "aa:bb:cc:aa:bb:cc", (char)sequence_number);
+
+        //then generate the PSDU
+        generate_mac_data_frame(msdu, rb, header, &psdu, &psdu_length);
 
         //swap the endianness of the psdu
         change_array_endianness(psdu, psdu_length, psdu);

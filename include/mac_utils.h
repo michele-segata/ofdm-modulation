@@ -100,17 +100,26 @@ int dbyte_equal(dbyte v1, byte byte1, byte byte2);
 struct MAC_DATAFRAME_HEADER generate_mac_header(dbyte frame_control, dbyte duration, const char *address1, const char *address2, const char *address3, byte sequence);
 
 /**
- * Given a payload, generates a MAC data frame (i.e., a PSDU) to be given
- * to the physical layer for encoding.
+ * Generates a default MAC header. For default, it is intended the MAC header
+ * of the sample PSDU in the 802.11-2012 standard, annex L
+ *
+ * \return a default mac header
+ */
+struct MAC_DATAFRAME_HEADER generate_default_mac_header();
+
+/**
+ * Given a payload and a MAC header, generates a MAC data frame (i.e., a PSDU)
+ * to be given to the physical layer for encoding. The function composes
+ * the header and the payload and appends the FCS
  *
  * \param msdu the payload for the MAC frame
  * \param msdu_size the size of the msdu in bytes
+ * \param header the mac header (see generate_mac_header())
  * \param psdu pointer to a byte array where to store the MAC frame. Memory
  * will be alloced by the function
  * \param psdu_size pointer to an integer where the size of the psdu in bytes
  * will be stored
- * \param seq sequence number of the frame
  */
-void generate_mac_data_frame(const char *msdu, int msdu_size, char **psdu, int *psdu_size, char seq);
+void generate_mac_data_frame(const char *msdu, int msdu_size, struct MAC_DATAFRAME_HEADER header, char **psdu, int *psdu_size);
 
 #endif /* MAC_UTILS_H_ */
