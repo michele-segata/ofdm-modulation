@@ -14,7 +14,12 @@
  * on stdout. Output bits must then be checked against expected output
  * bits shown in the standard.
  */
-int main() {
+int main(int argc, char **argv) {
+
+    if (argc != 2) {
+        printf("error: missing input file\n");
+        return 1;
+    }
 
     //psdu loaded from data file
     char psdu[1000];
@@ -30,15 +35,15 @@ int main() {
     char *scrambled_data;
 
     //read the psdu from text file
-    int rb = read_hex_from_file("misc/psdu-2012.hex", psdu, 1000);
+    int rb = read_hex_from_file(argv[1], psdu, 1000);
 
     if (rb == ERR_CANNOT_READ_FILE) {
-        printf("Cannot read file \"%s\": file not found?\n", "misc/data.bits");
-        return 0;
+        printf("Cannot read file \"%s\": file not found?\n", argv[1]);
+        return 1;
     }
     if (rb == ERR_INVALID_FORMAT) {
         printf("Invalid file format\n");
-        return 0;
+        return 1;
     }
 
     //swap the endianness of the psdu

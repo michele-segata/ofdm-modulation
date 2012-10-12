@@ -11,7 +11,12 @@
  * standard (annex J), and performs the convolutional encoding and puncturing with
  * a coding rate of 3/4, for testing the convolutional encoding step.
  */
-int main() {
+int main(int argc, char **argv) {
+
+    if (argc != 2) {
+        printf("error: missing input file\n");
+        return 1;
+    }
 
     //scrambled psdu loaded from data file
     char scrambled_psdu[1000];
@@ -25,15 +30,15 @@ int main() {
     char *punctured_data;
 
     //read the scrambled psdu from text file
-    int rb = read_bits_from_file("misc/scrambled-2012.bits", scrambled_psdu, 1000);
+    int rb = read_bits_from_file(argv[1], scrambled_psdu, 1000);
 
     if (rb == ERR_CANNOT_READ_FILE) {
-        printf("Cannot read file \"%s\": file not found?\n", "misc/scrambled.bits");
-        return 0;
+        printf("Cannot read file \"%s\": file not found?\n", argv[1]);
+        return 1;
     }
     if (rb == ERR_INVALID_FORMAT) {
         printf("Invalid file format\n");
-        return 0;
+        return 1;
     }
 
     //the size of the psdu in the 802.11-2012 example is 100 bytes

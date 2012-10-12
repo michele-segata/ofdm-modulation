@@ -15,7 +15,12 @@
  * sample DATA field is displayed MSB-LSB, but for the generation of the
  * DATA field, this has no impact, since we are adding only 0 bytes.
  */
-int main() {
+int main(int argc, char **argv) {
+
+    if (argc != 2) {
+        printf("error: missing input file\n");
+        return 1;
+    }
 
     //psdu loaded from data file
     char psdu[1000];
@@ -27,15 +32,15 @@ int main() {
     int len;
 
     //read the psdu from text file
-    int rb = read_hex_from_file("misc/psdu-2012.hex", psdu, 1000);
+    int rb = read_hex_from_file(argv[1], psdu, 1000);
 
     if (rb == ERR_CANNOT_READ_FILE) {
-        printf("Cannot read file \"%s\": file not found?\n", "misc/data.bits");
-        return 0;
+        printf("Cannot read file \"%s\": file not found?\n", argv[1]);
+        return 1;
     }
     if (rb == ERR_INVALID_FORMAT) {
         printf("Invalid file format\n");
-        return 0;
+        return 1;
     }
 
     //generate the OFDM data field, adding service field and pad bits

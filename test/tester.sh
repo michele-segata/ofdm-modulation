@@ -2,16 +2,17 @@
 
 # general purpose tester
 
-if [ $# -ne 2 ]; then
-	echo "Usage of tester: ${0} <test application> <expected output file>"
+if [ $# -ne 3 ]; then
+	echo "Usage of tester: ${0} <test application> <input file> <expected output file>"
 	exit 1
 fi
 
 app=${1}
-expected_out=${2}
+input=${2}
+expected_out=${3}
 
 cd ..
-${app} > test.out
+${app} ${input} > test.out
 
 res=`diff test.out ${expected_out}`
 
