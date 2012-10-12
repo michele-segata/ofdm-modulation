@@ -64,7 +64,10 @@ void print_bits_array(const char *b, int size, char separator) {
 void print_hex_array(const char *b, int size) {
     int i;
     for (i = 0; i < size; i++) {
-        printf("%02x ", (unsigned char)b[i]);
+        printf("%02x", (unsigned char)b[i]);
+        if (i != size - 1) {
+            printf(" ");
+        }
         fflush(stdout);
     }
 }
