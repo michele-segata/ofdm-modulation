@@ -12,7 +12,12 @@
  * standard (annex J), and generates the MAC frame (psdu) to be given to
  * PHY for encoding.
  */
-int main() {
+int main(int argc, char **argv) {
+
+    if (argc != 2) {
+        printf("error: missing input file\n");
+        return 1;
+    }
 
     //msdu loaded from data file
     char msdu[1000];
@@ -22,10 +27,10 @@ int main() {
     int len;
 
     //read the msdu from text file
-    int rb = read_hex_from_file("misc/msdu-2012.hex", msdu, 1000);
+    int rb = read_hex_from_file(argv[1], msdu, 1000);
 
     if (rb == ERR_CANNOT_READ_FILE) {
-        printf("Cannot read file \"%s\": file not found?\n", "misc/data.bits");
+        printf("Cannot read file \"%s\": file not found?\n", argv[1]);
         return 0;
     }
     if (rb == ERR_INVALID_FORMAT) {
@@ -33,11 +38,11 @@ int main() {
         return 0;
     }
 
-    //generate mac frame
-    generate_mac_data_frame(msdu, rb, &mac_frame, &len, 234);
+    //generate mac frame with default parameters
+    generate_mac_data_frame(msdu, rb, &mac_frame, &len, 0);
 
     //output bits and we're done
-    print_hex_array(mac_frame, len);
+    print_hex_array(mac_frame, len, '\n');
     printf("\n");
 
     free(mac_frame);
