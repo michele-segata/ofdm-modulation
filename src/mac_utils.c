@@ -60,13 +60,77 @@ unsigned int crc32(const char *buf, size_t len) {
     return update_crc32(0xffffffff, buf, len) ^ 0xffffffff;
 }
 
-//#define ENDLSS 1
+void str_to_mac_address(const char *mac, mac_address_t *addr) {
 
-#ifdef ENDLSS
-#define ENDIANNESS(x) change_endianness(x)
-#else
-#define ENDIANNESS(x) x
-#endif
+    unsigned int int_addr[6], i;
+    sscanf(mac, "%x:%x:%x:%x:%x:%x", &int_addr[0], &int_addr[1], &int_addr[2], &int_addr[3], &int_addr[4], &int_addr[5]);
+    for (i = 0; i < 6; i++)
+        (*addr)[i] = (byte) int_addr[i];
+
+}
+
+void construct_dbyte(byte byte1, byte byte2, dbyte *value) {
+    (*value)[0] = byte1;
+    (*value)[1] = byte2;
+}
+
+int dbyte_equal(dbyte v1, byte byte1, byte byte2) {
+    return ((v1[0] == byte1) && (v1[1] == byte2));
+}
+
+void dbyte_set(dbyte *a, dbyte b) {
+    (*a)[0] = b[0];
+    (*a)[1] = b[1];
+}
+
+struct MAC_DATAFRAME_HEADER generate_mac_header(dbyte frame_control, dbyte duration, const char *address1, const char *address2, const char *address3, byte sequence) {
+
+    struct MAC_DATAFRAME_HEADER hdr;
+
+    if (!dbyte_equal(frame_control, 0xFF, 0xFF)) {
+        dbyte_set(&hdr.frame_control, frame_control);
+    } else {
+        construct_dbyte(0x04, 0x02, &hdr.frame_control);
+    }
+
+    if (!dbyte_equal(duration, 0xFF, 0xFF)) {
+        dbyte_set(&hdr.duration, duration);
+    } else {
+        construct_dbyte(0x00, 0x2E, &hdr.duration);
+    }
+
+    if (address1) {
+        str_to_mac_address(address1, &hdr.address1);
+    } else {
+        str_to_mac_address("00:60:08:cd:37:a6", &hdr.address1);
+    }
+
+    if (address2) {
+        str_to_mac_address(address2, &hdr.address2);
+    } else {
+        str_to_mac_address("00:20:d6:01:3c:f1", &hdr.address2);
+    }
+
+    if (address3) {
+        str_to_mac_address(address3, &hdr.address3);
+    } else {
+        str_to_mac_address("00:60:08:ad:3b:af", &hdr.address3);
+    }
+
+    char seq_lsbs = 0;
+    char seq_msbs = 0;
+    int i;
+    for (i = 0; i < 4; i++) {
+        set_bit(&seq_lsbs, i + 4, get_bit(sequence, i));
+    }
+    for (i = 0; i < 4; i++) {
+        set_bit(&seq_msbs, i, get_bit(sequence, i + 4));
+    }
+    construct_dbyte(seq_lsbs, seq_msbs, &hdr.sequence);
+
+    return hdr;
+
+}
 
 void generate_mac_data_frame(const char *msdu, int msdu_size, char **psdu, int *psdu_size, char seq) {
 
@@ -75,58 +139,14 @@ void generate_mac_data_frame(const char *msdu, int msdu_size, char **psdu, int *
     //frame check sequence
     unsigned int fcs;
 
-    header.frame_control[0] = ENDIANNESS(0x08);//0x20; //00000100 00100000  indicate DATA frame (LOL, not), to_ds, from_ds, more frag, retry
-    header.frame_control[1] = ENDIANNESS(0x02);//0x40; //all other flags, unutilized //00000010 01000000
+    dbyte frame_control;
+    dbyte duration;
 
-    header.duration[0] = ENDIANNESS(0x00); //TODO: set accordingly to payload
-    header.duration[1] = ENDIANNESS(0x2e); //0x74; //2e = 00101110 -> 01110100 -> 74
+    //use values in the sample psdu of 802.11-2012
+    construct_dbyte(0xFF, 0xFF, &frame_control);
+    construct_dbyte(0xFF, 0xFF, &duration);
 
-    header.address1[0] = ENDIANNESS(0x00);
-    header.address1[1] = ENDIANNESS(0x60);
-    header.address1[2] = ENDIANNESS(0x08);
-    header.address1[3] = ENDIANNESS(0xcd);
-    header.address1[4] = ENDIANNESS(0x37);
-    header.address1[5] = ENDIANNESS(0xa6);
-
-    header.address2[0] = ENDIANNESS(0x00);
-    header.address2[1] = ENDIANNESS(0x20);
-    header.address2[2] = ENDIANNESS(0xd6);
-    header.address2[3] = ENDIANNESS(0x01);
-    header.address2[4] = ENDIANNESS(0x3c);
-    header.address2[5] = ENDIANNESS(0xf1);
-
-    header.address3[0] = ENDIANNESS(0x00);
-    header.address3[1] = ENDIANNESS(0x60);
-    header.address3[2] = ENDIANNESS(0x08);
-    header.address3[3] = ENDIANNESS(0xad);
-    header.address3[4] = ENDIANNESS(0x3b);
-    header.address3[5] = ENDIANNESS(0xaf);
-
-    //destination broadcast
-//    header.address3[0] = 0xff;
-//    header.address3[1] = 0xff;
-//    header.address3[2] = 0xff;
-//    header.address3[3] = 0xff;
-//    header.address3[4] = 0xff;
-//    header.address3[5] = 0xff;
-
-    //init sequence number to 0
-    //seq # first for bits (LSB)
-    char seq_lsbs = 0;
-    char seq_msbs = 0;
-    int i;
-    for (i = 0; i < 4; i++) {
-        set_bit(&seq_lsbs, i+4, get_bit(seq, i));
-    }
-    for (i = 0; i < 4; i++) {
-        set_bit(&seq_msbs, i, get_bit(seq, i + 4));
-    }
-    header.sequence[0] = ENDIANNESS(seq_lsbs);
-    header.sequence[1] = ENDIANNESS(seq_msbs);
-
-#ifdef ENDLSS
-    change_array_endianness(msdu, msdu_size, msdu);
-#endif
+    header = generate_mac_header(frame_control, duration, 0, 0, 0, seq);
 
     //header size is 24, plus 4 for FCS means 28 bytes
     *psdu_size = 28 + msdu_size;

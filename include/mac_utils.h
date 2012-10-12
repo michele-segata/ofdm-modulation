@@ -25,19 +25,79 @@
 #include "bit_utils.h"
 
 /**
+ * Define a IEEE 802 48 bits MAC address
+ */
+typedef byte mac_address_t[6];
+
+/**
+ * Define type for two bytes elements of the mac
+ * array
+ */
+typedef byte dbyte[2];
+
+/**
  * Define structure for the MAC header of a data frame.
  * Values as stored as MSB, but standard mandates LSB
  * representation. Bit utils functions can help changing
  * endiannes
  */
 struct MAC_DATAFRAME_HEADER {
-    char frame_control[2];  //protocol version, type, subtype, to_ds, from_ds, ...
-    char duration[2];       //duration field
-    char address1[6];       //address 1 indicating BSSID: 6 bytes MAC address
-    char address2[6];       //address 2 indicating receiver
-    char address3[6];       //address 3 indicating sender
-    char sequence[2];       //sequence number plus fragment number
+    dbyte frame_control;        //protocol version, type, subtype, to_ds, from_ds, ...
+    dbyte duration;             //duration field
+    mac_address_t address1;  //address 1 indicating BSSID: 6 bytes MAC address
+    mac_address_t address2;  //address 2 indicating receiver
+    mac_address_t address3;  //address 3 indicating sender
+    dbyte sequence;             //sequence number plus fragment number
 };
+
+/**
+ * Converts a mac address string into a mac_address_t type
+ *
+ * \param mac the mac address string in "aa:bb:cc:dd:ee:ff" hex format
+ * \param addr pointer to location where to store the converted mac address
+ */
+void str_to_mac_address(const char *mac, mac_address_t *addr);
+
+/**
+ * Given two bytes in the little endian format, constructs a dbyte element.
+ * The bytes will be arranged like "byte1byte2"
+ *
+ * \param byte1 first byte
+ * \param byte2 second byte
+ * \param value pointer to location where to store the dbyte element
+ */
+void construct_dbyte(byte byte1, byte byte2, dbyte *value);
+
+/**
+ * Returns true if v1 is equal to v2, false otherwise.
+ *
+ * \param v1 first dbyte value
+ * \param byte1 first byte of dbyte to check
+ * \param byte2 second byte of dbyte to check
+ * \return v1 == "byte1byte2"
+ */
+int dbyte_equal(dbyte v1, byte byte1, byte byte2);
+
+/**
+ * Given a set of parameters, generates a MAC frame header. This function
+ * is not able to generate ANY MAC header, like beacons or ACKs, but generates
+ * the header for data frames.
+ * For setting dbyte parameters, see construct dbyte
+ *
+ * \param frame_control frame control field. set to 0xFFFF to use the default
+ * value used in the 802.11-2012 sample encoding (0x0402)
+ * \param duration duration field. set to 0xFFFF to use the default value of
+ * 0x002e
+ * \param address1 bssid address. set to null to use the default
+ * value used in the 802.11-2012 sample encoding (00:60:08:cd:37:a6)
+ * \param address2 receiver address. set to null to use the default
+ * value used in the 802.11-2012 sample encoding (00:20:d6:01:3c:f1)
+ * \param address3 sender address. set to null to use the default
+ * value used in the 802.11-2012 sample encoding (00:60:08:ad:3b:af)
+ * \param sequence sequence number
+ * \return a MAC header with desired informations
+ */
+struct MAC_DATAFRAME_HEADER generate_mac_header(dbyte frame_control, dbyte duration, const char *address1, const char *address2, const char *address3, byte sequence);
 
 /**
  * Given a payload, generates a MAC data frame (i.e., a PSDU) to be given

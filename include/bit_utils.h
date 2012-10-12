@@ -24,6 +24,13 @@
 
 #include <fftw3.h>
 
+/**
+ * Define several types for byte, dwords and qwords
+ */
+typedef char    byte;
+typedef short   dword;
+typedef int     qword;
+
 #define ERR_CANNOT_READ_FILE -1
 #define ERR_INVALID_FORMAT   -2
 
