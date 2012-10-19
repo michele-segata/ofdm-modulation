@@ -9,6 +9,14 @@
 #include "bit_utils.h"
 #include "mac_utils.h"
 
+#define TEXT    0
+#define BIN     1
+
+void copy_argument(char **to, const char *from) {
+    *to = (char *) calloc(strlen(from) + 1, sizeof(char));
+    strcpy(*to, from);
+}
+
 void usage(const char *argv0) {
 
     /**
@@ -22,29 +30,37 @@ void usage(const char *argv0) {
      * o output
      * p payload
      * r repeat
+     * d data rate
      */
-    printf("Usage %s: [-h] [-s sender mac address] [-r receiver mac address] [-b bssid] [-n sequence number] [-c control field] "\
-            "[-f format] [-o output] [-p payload] [-r]\n\n"\
-            "\t-h\tPrint this help and exit\n\n"\
-            "\t-s\tSet sender MAC address. If not specified, 00:60:08:ad:3b:af is used.\n"\
-            "\t\tThe format of any MAC address must be colon separated hexadecimal values\n\n"\
-            "\t-a\tSet receiver MAC address. If not specified, 00:20:d6:01:3c:f1 is used\n\n"\
-            "\t-b\tSet the BSSID. If not specified, 00:60:08:cd:37:a6 is used\n\n"\
-            "\t-n\tSet the sequence number. If repeat is specified, this will be used as starting value.\n"\
-            "\t\tBy default it is set to 0\n\n"\
-            "\t-c\tSet the MAC header frame control field. It must be made by two hexadecimal values.\n"\
-            "\t\tIf not specified, the default value 0402 will be used\n\n"\
-            "\t-f\tSet the format of the output, i.e., \"bin\" or \"text\". Binary format\n"\
-            "\t\tis useful for sending the complex time samples to a file which will be\n"\
-            "\t\tthen read in GNURadio and sent, for example, to an USRP device. Textual\n"\
-            "\t\toutput is useful for debugging or displaying purposes. By default, it is\n"\
-            "\t\tset to textual mode\n\n"\
-            "\t-o\tSet output file. If not specified, output is printed to stdout\n\n"\
-            "\t-p\tPayload of the MAC frame. If not specified, it will be prompted from stdin\n\n"\
-            "\t-r\tRepeat option. If activated, the program will continuously prompt a payload\n"\
-            "\t\tfrom stdin (so -p option is ignored if -r is set) and generate a new OFDM frame\n"\
-            "\t\teach time. This might be useful to send several packets writing them to a fifo\n"\
-            "\t\tfile (see mkfifo) which can be used as input by GNURadio\n", argv0);
+    printf("Usage %s: [-h] [-s sender mac address] [-r receiver mac address] [-b bssid] [-n sequence number] [-c control field] "
+            "[-f format] [-o output] [-p payload] [-r]\n\n"
+            "\t-h\tPrint this help and exit\n\n"
+            "\t-s\tSet sender MAC address. If not specified, 00:60:08:ad:3b:af is used.\n"
+            "\t\tThe format of any MAC address must be colon separated hexadecimal values\n\n"
+            "\t-a\tSet receiver MAC address. If not specified, 00:20:d6:01:3c:f1 is used\n\n"
+            "\t-b\tSet the BSSID. If not specified, 00:60:08:cd:37:a6 is used\n\n"
+            "\t-n\tSet the sequence number. If repeat is specified, this will be used as starting value.\n"
+            "\t\tBy default it is set to 0\n\n"
+            "\t-c\tSet the MAC header frame control field. It must be made by two hexadecimal values.\n"
+            "\t\tIf not specified, the default value 0402 will be used\n\n"
+            "\t-f\tSet the format of the output, i.e., \"bin\" or \"text\". Binary format\n"
+            "\t\tis useful for sending the complex time samples to a file which will be\n"
+            "\t\tthen read in GNURadio and sent, for example, to an USRP device. Textual\n"
+            "\t\toutput is useful for debugging or displaying purposes. By default, it is\n"
+            "\t\tset to textual mode\n\n"
+            "\t-o\tSet output file. If not specified, output is printed to stdout\n\n"
+            "\t-p\tPayload of the MAC frame. If not specified, it will be prompted from stdin\n\n"
+            "\t-r\tRepeat option. If activated, the program will continuously prompt a payload\n"
+            "\t\tfrom stdin (so -p option is ignored if -r is set) and generate a new OFDM frame\n"
+            "\t\teach time. This might be useful to send several packets writing them to a fifo\n"
+            "\t\tfile (see mkfifo) which can be used as input by GNURadio\n\n"
+            "\t-d\tData rate used for encoding. The parameter should specify the speed in Mbps\n"
+            "\t\tof the 802.11a/g standards, i.e., 6, 9, 12, 18, 24, 36, 48 or 54. Notice that\n"
+            "\t\tfor obtaining the speeds of standards with different bandwidths, like 802.11p,\n"
+            "\t\tyou just need to change the sampling frequency before sending the frame with\n"
+            "\t\tyour software defined radio. For example, by encoding a frame with a datarate\n"
+            "\t\tof 6 Mbps and sending it out using a sampling frequency of 10 MHz, you will\n"
+            "\t\tobtain a 3 Mbps frame. The default datarate is set to 36 Mbps\n", argv0);
 
 }
 
@@ -55,7 +71,7 @@ int main(int argc, char **argv) {
     //msdu loaded from data file
     char msdu[1000];
     //generated psdu
-    char *psdu;
+    char *psdu = 0;
     //psdu length
     int psdu_length;
     //ofdm encoding parameters
@@ -63,35 +79,35 @@ int main(int argc, char **argv) {
     //transmission parameters
     struct TX_PARAMETERS tx_params;
     //OFDM DATA field, and auxiliary storage
-    char *data;
+    char *data = 0;
     //length of the DATA field
     int len;
     //scrambled data field
-    char *scrambled_data;
+    char *scrambled_data = 0;
     //encoded data field
-    char *encoded_data;
+    char *encoded_data = 0;
     //punctured data field
-    char *punctured_data;
+    char *punctured_data = 0;
     //interleaved data field
-    char *interleaved_data;
+    char *interleaved_data = 0;
     //OFDM modulated symbol
-    fftw_complex *mod;
+    fftw_complex *mod = 0;
     //symbol with pilot carriers
-    fftw_complex *pil;
+    fftw_complex *pil = 0;
     //ifft inputs
-    fftw_complex *ifft;
+    fftw_complex *ifft = 0;
     //symbol time samples (after ifft)
-    fftw_complex *time;
+    fftw_complex *time = 0;
     //cyclically extended symbol
-    fftw_complex *ext;
+    fftw_complex *ext = 0;
     //signal header
-    fftw_complex *signal;
+    fftw_complex *signal = 0;
     //short training sequence
-    fftw_complex *short_sequence;
+    fftw_complex *short_sequence = 0;
     //long training sequence
-    fftw_complex *long_sequence;
+    fftw_complex *long_sequence = 0;
     //final OFDM frame
-    fftw_complex *mod_samples;
+    fftw_complex *mod_samples = 0;
     //index of data symbol under processing
     int symbol;
     //fields for the mac header
@@ -112,6 +128,7 @@ int main(int argc, char **argv) {
      * o output
      * p payload
      * r repeat
+     * d data
      */
 
     //sender, receiver and bssid addresses
@@ -119,22 +136,28 @@ int main(int argc, char **argv) {
     //sequence number
     char sequence = 0;
     //control field (2 bytes)
-    char control1, control2;
+    char control1 = 0xFF, control2 = 0xFF;
     //format 0=text 1=bin
-    int format = 0;
+    int format = TEXT;
     //output file
     char *outfile = 0;
     //payload
     char *payload = 0;
     //repeat option
     int repeat = 0;
+    //data rate
+    int data_rate = 36;
 
     //s r b n
     int c;
+    //helper variables
+    int sn;
+    unsigned int v1, v2;
     //parse command line arguments
-    while ((c = getopt (argc, argv, "ha:s:b:n:c:f:o:p:r")) != -1) {
+    //TODO: fix free of resources when invalid argument is specified
+    while ((c = getopt(argc, argv, "ha:s:b:n:c:f:o:p:rd:")) != -1) {
 
-        switch(c) {
+        switch (c) {
 
         case 'h':
             usage(argv[0]);
@@ -143,12 +166,106 @@ int main(int argc, char **argv) {
 
         case 's':
             //set sender address
-            sender = optarg;
+            copy_argument(&sender, optarg);
+            break;
+
+        case 'a':
+            //set receiver address
+            copy_argument(&receiver, optarg);
+            break;
+
+        case 'b':
+            //set bssid address
+            copy_argument(&bssid, optarg);
+            break;
+
+        case 'n':
+            //set sequence number
+
+            if (sscanf(optarg, "%d", &sn) != 1) {
+                printf("Invalid sequence number %s\n", optarg);
+                return 1;
+            }
+            sequence = (char) sn;
+            break;
+
+        case 'c':
+            //set frame control field
+            if (sscanf(optarg, "%2x%2x", &v1, &v2) != 2) {
+                printf("Invalid frame control field %s\n", optarg);
+                return 1;
+            }
+            control1 = (char) v1;
+            control2 = (char) v2;
+            break;
+
+        case 'f':
+            //set output format
+            if (strcmp(optarg, "text") == 0) {
+                format = TEXT;
+            } else {
+                if (strcmp(optarg, "bin") == 0) {
+                    format = BIN;
+                } else {
+                    printf("Invalid output format %s. Use either \"text\" or \"bin\"\n", optarg);
+                    return 1;
+                }
+            }
+            break;
+
+        case 'o':
+            //set output file
+            copy_argument(&outfile, optarg);
             break;
 
         case 'r':
-            //set receiver address
-            receiver = optarg;
+            //set repeat flag
+            repeat = 1;
+            break;
+
+        case 'p':
+            //set payload
+            copy_argument(&payload, optarg);
+            break;
+
+        case 'd':
+            //set datarate
+            if (sscanf(optarg, "%d", &data_rate) != 1) {
+                printf("Invalid data rate %s\n", optarg);
+                return 1;
+            }
+
+            switch (data_rate) {
+            case 6:
+                params = get_ofdm_parameter(BW_20_DR_6_MBPS);
+                break;
+            case 9:
+                params = get_ofdm_parameter(BW_20_DR_9_MBPS);
+                break;
+            case 12:
+                params = get_ofdm_parameter(BW_20_DR_12_MBPS);
+                break;
+            case 18:
+                params = get_ofdm_parameter(BW_20_DR_18_MBPS);
+                break;
+            case 24:
+                params = get_ofdm_parameter(BW_20_DR_24_MBPS);
+                break;
+            case 36:
+                params = get_ofdm_parameter(BW_20_DR_36_MBPS);
+                break;
+            case 48:
+                params = get_ofdm_parameter(BW_20_DR_48_MBPS);
+                break;
+            case 54:
+                params = get_ofdm_parameter(BW_20_DR_54_MBPS);
+                break;
+            default:
+                printf("Invalid data rate %s\n", optarg);
+                return 1;
+                break;
+            }
+
             break;
 
         default:
@@ -160,22 +277,19 @@ int main(int argc, char **argv) {
 
     }
 
-        //
-//            switch (c) {
-//
-//                case 'a':
-//                    //if the user manually specifies an address, disable
-//                    //automatic address
-//                    automatic_address = 0;
-//                    recv_address = inet_addr(optarg);
-//                    break;
+    //init output file
+    FILE *f;
 
-    //fifo output file
-    FILE *f = fopen("ofdm.fifo", "ab");
-
-    if (f == 0) {
-        printf("File ofdm.fifo not found. Create it with 'mkfifo ofdm.fifo'\n");
-        return 0;
+    if (outfile) {
+        //user wants to write to a file
+        f = fopen(outfile, format == TEXT ? "w" : "wb");
+        if (!f) {
+            printf("Cannot open \"%s\" for write. Permission denied?\n", outfile);
+            return 1;
+        }
+    } else {
+        //user wants to write to stdout
+        f = stdout;
     }
 
     //the size of these buffers does not depend on frame size. allocate them once
@@ -195,17 +309,62 @@ int main(int argc, char **argv) {
 
     //set the fields for the mac frame that won't change
     //data field
-    construct_dbyte(0x08, 0x02, &frame_control);
+    construct_dbyte(control1, control2, &frame_control);
     //use default duration from standard
     construct_dbyte(0xFF, 0xFF, &duration);
 
+    //print summary of arguments
+    /**
+         * s sender
+         * a receiver
+         * b bssid
+         * n sequence number
+         * c control
+         * h help
+         * f format (bin/text)
+         * o output
+         * p payload
+         * r repeat
+         * d data
+         */
+    header = generate_mac_header(frame_control, duration, bssid, receiver, sender, sequence);
+    fprintf(stderr, "Sender MAC address:\t"); print_mac_address(header.address3, stderr); fprintf(stderr, "\n");
+    fprintf(stderr, "Receiver MAC address:\t"); print_mac_address(header.address2, stderr); fprintf(stderr, "\n");
+    fprintf(stderr, "BSSID:\t\t\t"); print_mac_address(header.address1, stderr); fprintf(stderr, "\n");
+    fprintf(stderr, "Frame control field:\t%02hhx%02hhx\n", header.frame_control[0], header.frame_control[1]);
+    fprintf(stderr, "Data rate:\t\t%d Mbps\n", data_rate);
+    fprintf(stderr, "Sequence number:\t%d\n", (int)sequence);
+    fprintf(stderr, "Output file:\t\t%s\n", outfile ? outfile : "stdout");
+    fprintf(stderr, "Output format:\t\t%s\n", format == TEXT ? "textual" : "binary");
+    fprintf(stderr, "Repeat:\t\t\t%s\n", repeat ? "yes" : "no");
+    fprintf(stderr, "Payload:\t\t%s\n", repeat || !payload ? "read from stdin" : payload);
+
     //read the psdu from stdin
-    while (fgets(msdu, 1000, stdin) != NULL) {
+    char* read_result;
+
+    //if a payload is set, and we should not repeat
+    //then set the msdu as specified payload
+    if (payload && !repeat) {
+        strncpy(msdu, payload, 1000);
+        read_result = (char *) 1;
+    }
+
+    do {
+
+        //if we should not repeat the encoding procedure, and no payload
+        //is set, take it from stdin
+        if (repeat || !payload) {
+            read_result = fgets(msdu, 1000, stdin);
+        }
+
+        if (read_result == NULL ) {
+            break;
+        }
 
         int rb = strlen(msdu);
 
         //generate custom mac header
-        header = generate_mac_header(frame_control, duration, "aa:bb:cc:dd:ee:ff", "aa:bb:cc:dd:ee:ff", "aa:bb:cc:aa:bb:cc", (char)sequence_number);
+        header = generate_mac_header(frame_control, duration, bssid, receiver, sender, sequence);
 
         //then generate the PSDU
         generate_mac_data_frame(msdu, rb, header, &psdu, &psdu_length);
@@ -267,11 +426,16 @@ int main(int argc, char **argv) {
 
         int i;
         for (i = 0; i < (5 + tx_params.n_sym) * OFDM_SYMBOL_SIZE + 1; i++) {
-            float val;
-            val = mod_samples[i][0];
-            fwrite(&val, sizeof(float), 1, f);
-            val = mod_samples[i][1];
-            fwrite(&val, sizeof(float), 1, f);
+
+            if (format == BIN) {
+                float val;
+                val = mod_samples[i][0];
+                fwrite(&val, sizeof(float), 1, f);
+                val = mod_samples[i][1];
+                fwrite(&val, sizeof(float), 1, f);
+            } else {
+                fprintf(f, "%d %f %f\n", i, mod_samples[i][0], mod_samples[i][1]);
+            }
         }
 
         //flush the output file
@@ -288,9 +452,14 @@ int main(int argc, char **argv) {
         //increment the sequence number
         sequence_number++;
 
-    }
+    } while (repeat);
 
     fclose(f);
+    free(outfile);
+    free(sender);
+    free(receiver);
+    free(bssid);
+    free(payload);
 
     fftw_free(mod);
     fftw_free(pil);
