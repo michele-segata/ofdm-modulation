@@ -69,6 +69,14 @@ void str_to_mac_address(const char *mac, mac_address_t *addr);
 void construct_dbyte(byte byte1, byte byte2, dbyte *value);
 
 /**
+ * Prints a mac address in textual format to a file
+ *
+ * \param address the mac address
+ * \param f output file
+ */
+void print_mac_address(mac_address_t address, FILE *f);
+
+/**
  * Returns true if v1 is equal to v2, false otherwise.
  *
  * \param v1 first dbyte value
@@ -97,7 +105,7 @@ int dbyte_equal(dbyte v1, byte byte1, byte byte2);
  * \param sequence sequence number
  * \return a MAC header with desired informations
  */
-struct MAC_DATAFRAME_HEADER generate_mac_header(dbyte frame_control, dbyte duration, const char *address1, const char *address2, const char *address3, byte sequence);
+struct MAC_DATAFRAME_HEADER generate_mac_header(dbyte frame_control, dbyte duration, const char *bssid, const char *receiver, const char *sender, byte sequence);
 
 /**
  * Generates a default MAC header. For default, it is intended the MAC header

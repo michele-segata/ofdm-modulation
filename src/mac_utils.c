@@ -74,6 +74,10 @@ void construct_dbyte(byte byte1, byte byte2, dbyte *value) {
     (*value)[1] = byte2;
 }
 
+void print_mac_address(mac_address_t address, FILE *f) {
+    fprintf(f, "%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx", address[0], address[1], address[2], address[3], address[4], address[5]);
+}
+
 int dbyte_equal(dbyte v1, byte byte1, byte byte2) {
     return ((v1[0] == byte1) && (v1[1] == byte2));
 }
