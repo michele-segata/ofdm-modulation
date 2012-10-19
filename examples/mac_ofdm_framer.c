@@ -1,12 +1,52 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
 
 #include <fftw3.h>
 
 #include "ofdm_utils.h"
 #include "bit_utils.h"
 #include "mac_utils.h"
+
+void usage(const char *argv0) {
+
+    /**
+     * s sender
+     * a receiver
+     * b bssid
+     * n sequence number
+     * c control
+     * h help
+     * f format (bin/text)
+     * o output
+     * p payload
+     * r repeat
+     */
+    printf("Usage %s: [-h] [-s sender mac address] [-r receiver mac address] [-b bssid] [-n sequence number] [-c control field] "\
+            "[-f format] [-o output] [-p payload] [-r]\n\n"\
+            "\t-h\tPrint this help and exit\n\n"\
+            "\t-s\tSet sender MAC address. If not specified, 00:60:08:ad:3b:af is used.\n"\
+            "\t\tThe format of any MAC address must be colon separated hexadecimal values\n\n"\
+            "\t-a\tSet receiver MAC address. If not specified, 00:20:d6:01:3c:f1 is used\n\n"\
+            "\t-b\tSet the BSSID. If not specified, 00:60:08:cd:37:a6 is used\n\n"\
+            "\t-n\tSet the sequence number. If repeat is specified, this will be used as starting value.\n"\
+            "\t\tBy default it is set to 0\n\n"\
+            "\t-c\tSet the MAC header frame control field. It must be made by two hexadecimal values.\n"\
+            "\t\tIf not specified, the default value 0402 will be used\n\n"\
+            "\t-f\tSet the format of the output, i.e., \"bin\" or \"text\". Binary format\n"\
+            "\t\tis useful for sending the complex time samples to a file which will be\n"\
+            "\t\tthen read in GNURadio and sent, for example, to an USRP device. Textual\n"\
+            "\t\toutput is useful for debugging or displaying purposes. By default, it is\n"\
+            "\t\tset to textual mode\n\n"\
+            "\t-o\tSet output file. If not specified, output is printed to stdout\n\n"\
+            "\t-p\tPayload of the MAC frame. If not specified, it will be prompted from stdin\n\n"\
+            "\t-r\tRepeat option. If activated, the program will continuously prompt a payload\n"\
+            "\t\tfrom stdin (so -p option is ignored if -r is set) and generate a new OFDM frame\n"\
+            "\t\teach time. This might be useful to send several packets writing them to a fifo\n"\
+            "\t\tfile (see mkfifo) which can be used as input by GNURadio\n", argv0);
+
+}
 
 int main(int argc, char **argv) {
 
@@ -58,6 +98,77 @@ int main(int argc, char **argv) {
     dbyte frame_control, duration;
     //mac header
     struct MAC_DATAFRAME_HEADER header;
+
+    //command line argument parsing
+
+    /**
+     * s sender
+     * a receiver
+     * b bssid
+     * n sequence number
+     * c control
+     * h help
+     * f format (bin/text)
+     * o output
+     * p payload
+     * r repeat
+     */
+
+    //sender, receiver and bssid addresses
+    char *sender = 0, *receiver = 0, *bssid = 0;
+    //sequence number
+    char sequence = 0;
+    //control field (2 bytes)
+    char control1, control2;
+    //format 0=text 1=bin
+    int format = 0;
+    //output file
+    char *outfile = 0;
+    //payload
+    char *payload = 0;
+    //repeat option
+    int repeat = 0;
+
+    //s r b n
+    int c;
+    //parse command line arguments
+    while ((c = getopt (argc, argv, "ha:s:b:n:c:f:o:p:r")) != -1) {
+
+        switch(c) {
+
+        case 'h':
+            usage(argv[0]);
+            return 0;
+            break;
+
+        case 's':
+            //set sender address
+            sender = optarg;
+            break;
+
+        case 'r':
+            //set receiver address
+            receiver = optarg;
+            break;
+
+        default:
+
+            return 0;
+            break;
+
+        }
+
+    }
+
+        //
+//            switch (c) {
+//
+//                case 'a':
+//                    //if the user manually specifies an address, disable
+//                    //automatic address
+//                    automatic_address = 0;
+//                    recv_address = inet_addr(optarg);
+//                    break;
 
     //fifo output file
     FILE *f = fopen("ofdm.fifo", "ab");
