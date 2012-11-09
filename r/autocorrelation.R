@@ -58,7 +58,7 @@ compute.auto.correlation <- function(samples, normalized_samples, scanWindowSize
     #compute normalization value
 	nsum <- sum(normalized_samples[c((start_i+16):stop_i)]);
     
-    if (nsum == 0) {
+    if (nsum < 0.001) {
         return (0);
     }
     else {
@@ -111,13 +111,13 @@ detect.short.training.sequence <- function(signal) {
 
     toplot <- data.frame(idx=1:length(autocorrelations), val=autocorrelations);
     
-    plot <- ggplot(data=toplot, aes(x=idx, y=val)) + geom_line() + ylim(c(0,1.01)) + geom_vline(xintercept = begin, colour="red", linetype="longdash"); #+ xlim(c(0,250))  
+    plot <- ggplot(data=toplot, aes(x=idx, y=val)) + geom_line() + geom_vline(xintercept = begin, colour="red", linetype="longdash"); #+ xlim(c(0,250))  
 
     return (list(begin, plot));
     
 }
 
-detect.long.training.sequence <- function(signal) {
+detect.long.training.sequence <- function(signal, base_index, count) {
 
     norm_samples <- Re(signal)^2 + Im(signal)^2;
     
@@ -154,10 +154,12 @@ detect.long.training.sequence <- function(signal) {
         start_i <- start_i + 1;
         stop_i <- stop_i + 1;
     }
+   
+   	ext <- c(rep(0, base_index-1), correlations, rep(0, count + 1 -  base_index - length(correlations)));
     
-    toplot <- data.frame(idx=1:length(correlations), val=correlations);
+    toplot <- data.frame(idx=1:length(ext), val=ext);
     
-    plot <- ggplot(data=toplot, aes(x=idx, y=val)) + geom_line()+ ylim(c(0,1))+ geom_vline(xintercept = max_i1, colour="red", linetype="longdash") + geom_vline(xintercept = max_i2, colour="red", linetype="longdash");
+    plot <- ggplot(data=toplot, aes(x=idx, y=val)) + geom_line()+ ylim(c(0,1))+ geom_vline(xintercept = max_i1 + base_index - 1, colour="red", linetype="longdash") + geom_vline(xintercept = max_i2 + base_index - 1, colour="red", linetype="longdash");
     
     #todo: substitute 0 with the two correlation peaks
     
@@ -234,20 +236,20 @@ signal <- c(rep(complex(real=0), extension), signal);
 signal <- c(signal, rep(complex(real=0), extension));
 
 #standard deviation of AWGN
-sd <- .004;
+sd <- .07;
 #set seed for generating different noises
 set.seed(12345);
 #now just generate noise
 noise <- complex(real=rnorm(n=length(signal), sd=sd),imaginary=rnorm(n=length(signal), sd=sd));
 
-freq_offset <- 15;
+freq_offset <- 4;
 
 #exp(j*2pi*Df*Ts*i)
 df <- freq_offset * (1e-6) * (5.9e9);
 phase <- 2 * pi * df * 1.0/10e6;
 print(paste("Frequency offsert =",(df/1000),"KHz, Phase offset = ", phase));
 
-freqsignal <- signal * complex(real=cos(phase*(1:length(signal))), imaginary=sin(phase*(1:length(signal))));
+freqsignal <- apply.frequency.offset(signal, phase, 1);
 
 #set of complex values to be analyzed: signal plus noise! Jo!
 cvalues <- freqsignal + noise;
@@ -264,7 +266,7 @@ print(paste("Preamble start detected at sample", start_short_sequence));
 
 #detect long training sequence
 if (start_short_sequence+400 <= length(cvalues)) {
-	res_long_seq <- detect.long.training.sequence(cvalues[(start_short_sequence+80):(start_short_sequence+400)]);
+	res_long_seq <- detect.long.training.sequence(cvalues[(start_short_sequence+80):(start_short_sequence+400)], start_short_sequence+80, length(cvalues));
 	start_long_sequence <- res_long_seq[[1]][[1]] - 32 + start_short_sequence + 80;
 	print(paste("Long sequence starts at sample", start_long_sequence));
 	detected_phase_offset <- get_channel_estimate(cvalues[start_short_sequence:(start_long_sequence+160)]);
