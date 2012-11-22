@@ -58,7 +58,7 @@ compute.auto.correlation <- function(samples, normalized_samples, scanWindowSize
     #compute normalization value
 	nsum <- sum(normalized_samples[c((start_i+16):stop_i)]);
     
-    if (nsum < 0.001) {
+    if (nsum < 0.00001) {
         return (0);
     }
     else {
@@ -224,38 +224,46 @@ gg_color_hue <- function(n) {
 
 
 
+use.real.frame = T
 
+if (use.real.frame) {
+	#load data samples of a real ofdm frame captured using USRP
+	load('../misc/captured_frame.Rdata');
+	signal <- ex.sig #complex(real=frame[,2], imaginary=frame[,3]);
+	cvalues <- signal
+}
+else{
+	#read frame from 802.11 example
+	frame <- read.table('../misc/signal-2012.complex');
 
-#read frame from 802.11 example
-frame <- read.table('../misc/signal-2012.complex');
-signal <- complex(real=frame[,2], imaginary=frame[,3]);
+	#add 300 zero samples at beginning and at end (noise will be then added)
+	extension <- 300;
+	signal <- c(rep(complex(real=0), extension), signal);
+	signal <- c(signal, rep(complex(real=0), extension));
 
-#add 300 zero samples at beginning and at end (noise will be then added)
-extension <- 300;
-signal <- c(rep(complex(real=0), extension), signal);
-signal <- c(signal, rep(complex(real=0), extension));
+	#standard deviation of AWGN
+	sd <- .07;
+	#set seed for generating different noises
+	set.seed(12345);
+	#now just generate noise
+	noise <- complex(real=rnorm(n=length(signal), sd=sd),imaginary=rnorm(n=length(signal), sd=sd));
 
-#standard deviation of AWGN
-sd <- .07;
-#set seed for generating different noises
-set.seed(12345);
-#now just generate noise
-noise <- complex(real=rnorm(n=length(signal), sd=sd),imaginary=rnorm(n=length(signal), sd=sd));
+	freq_offset <- 4;
 
-freq_offset <- 4;
+	#exp(j*2pi*Df*Ts*i)
+	df <- freq_offset * (1e-6) * (5.9e9);
+	phase <- 2 * pi * df * 1.0/10e6;
+	print(paste("Frequency offsert =",(df/1000),"KHz, Phase offset = ", phase));
 
-#exp(j*2pi*Df*Ts*i)
-df <- freq_offset * (1e-6) * (5.9e9);
-phase <- 2 * pi * df * 1.0/10e6;
-print(paste("Frequency offsert =",(df/1000),"KHz, Phase offset = ", phase));
+	freqsignal <- apply.frequency.offset(signal, phase, 1);
 
-freqsignal <- apply.frequency.offset(signal, phase, 1);
+	#set of complex values to be analyzed: signal plus noise! Jo!
+	cvalues <- freqsignal + noise;
 
-#set of complex values to be analyzed: signal plus noise! Jo!
-cvalues <- freqsignal + noise;
+	#print out SNR
+	print(paste("Signal power:", compute.signal.power(signal), "Noise power:", compute.signal.power(noise), "SNR:", compute.signal.to.noise.ratio(signal, noise), "dB"));
+}
 
-#print out SNR
-print(paste("Signal power:", compute.signal.power(signal), "Noise power:", compute.signal.power(noise), "SNR:", compute.signal.to.noise.ratio(signal, noise), "dB"));
 
 #detect short training sequence
 res_short_seq <- detect.short.training.sequence(cvalues);
@@ -299,7 +307,7 @@ datas_end <- geom_vline(xintercept = data_ends, colour=colors[4], linetype="long
 ss_start = geom_vline(xintercept = start_short_sequence, colour=colors[1], linetype="longdash");
 ls_start = geom_vline(xintercept = start_long_sequence, colour=colors[2], linetype="longdash");
 
-plot_samples <- ggplot(data=timesamples, aes(x=idx, y=real)) + geom_line(lw=2) +
+plot_samples <- ggplot(data=timesamples, aes(x=idx, y=abs(real+1i*imaginary))) + geom_line(lw=2) +
 				 ss_start + ls_start + datas_begin + datas_end;
 
 plot_corrected_samples <- ggplot(data=corrected_timesamples, aes(x=idx, y=real)) + geom_line(lw=2) +
