@@ -231,8 +231,7 @@ if (use.real.frame) {
 	load('../misc/captured_frame.Rdata');
 	signal <- ex.sig #complex(real=frame[,2], imaginary=frame[,3]);
 	cvalues <- signal
-}
-else{
+}else{
 	#read frame from 802.11 example
 	frame <- read.table('../misc/signal-2012.complex');
 
