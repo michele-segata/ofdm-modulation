@@ -6,5 +6,5 @@ if (FFTW_FOUND)
   set(LIBS ${LIBS} ${FFTW_LIBRARIES})
 endif (FFTW_FOUND)
 
-add_library(ofdm_lib bit_utils.c ofdm_utils.c mac_utils.c)
+add_library(ofdm_lib bit_utils.c ofdm_utils.c mac_utils.c utils.c)
 target_link_libraries(ofdm_lib ${LIBS})
