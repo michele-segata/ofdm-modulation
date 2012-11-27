@@ -13,6 +13,16 @@ else(${CMAKE_BUILD_TYPE} MATCHES "Release")
     message(STATUS "Configuring project in " ${CMAKE_BUILD_TYPE} " mode")
 endif()
 
+# enable/disable electric fence library
+if (ENABLE_EFENCE)
+    # Add efence link
+    find_library(EFENCE_LIBRARY NAMES efence PATHS /opt/local/lib/)
+    set(LIBS ${LIBS} ${EFENCE_LIBRARY})
+    message(STATUS "Configuring project with electric fence library")
+else()
+    message(STATUS "Configuring project without electric fence library. Set -DENABLE_EFENCE=ON for linking project against efence")
+endif()
+
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
@@ -21,6 +31,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/Modules/")
 set(EXECUTABLE_OUTPUT_PATH "${CMAKE_SOURCE_DIR}/build/")
 
 find_package (fftw3 REQUIRED)
+
+if (FFTW_FOUND)
+  include_directories(${FFTW_INCLUDE_DIRS})
+  set(LIBS ${LIBS} ${FFTW_LIBRARIES})
+endif (FFTW_FOUND)
 
 add_subdirectory(src)
 add_subdirectory(test)
