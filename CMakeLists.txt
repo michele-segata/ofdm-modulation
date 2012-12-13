@@ -37,6 +37,10 @@ if (FFTW_FOUND)
   set(LIBS ${LIBS} ${FFTW_LIBRARIES})
 endif (FFTW_FOUND)
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+	set (LIBS ${LIBS} "rt")
+endif()
+
 add_subdirectory(src)
 add_subdirectory(test)
 add_subdirectory(examples)

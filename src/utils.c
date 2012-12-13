@@ -21,7 +21,7 @@
 
 #include "utils.h"
 
-timer_t start_timer() {
+nanotimer_t start_timer() {
 #ifdef __APPLE__
     return mach_absolute_time();
 #else
@@ -31,7 +31,7 @@ timer_t start_timer() {
 #endif
 }
 
-uint64_t elapsed_nanosecond(timer_t timer) {
+uint64_t elapsed_nanosecond(nanotimer_t timer) {
 #ifdef __APPLE__
     return mach_absolute_time() - timer;
 #else
