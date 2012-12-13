@@ -919,7 +919,7 @@ int compute_autocorrelation(fftw_complex *samples, int size) {
 
     }
 
-    uint64_t elapsed_ns = elapsed_nanosecond(startt);
+    nanotimer_t elapsed_ns = elapsed_nanosecond(startt);
     double elapsed = ((double) elapsed_ns) / 1e9;    //(end_time.tv_usec - start_time.tv_usec) / 1.0e6 + end_time.tv_sec - start_time.tv_sec;
     printf("processed %d samples in %lu ns. speed: %f Msps\n", start, elapsed_ns, size / elapsed / 1e6);
 
@@ -956,7 +956,7 @@ int detect_long_training_start(fftw_complex *samples, int size) {
 
     int i;
 
-    uint64_t startt;
+    nanotimer_t startt;
     startt = start_timer();
 
     for (i = 0; i < size - 64; i++) {
@@ -965,7 +965,7 @@ int detect_long_training_start(fftw_complex *samples, int size) {
         }
     }
 
-    uint64_t elapsed_ns = elapsed_nanosecond(startt);
+    nanotimer_t elapsed_ns = elapsed_nanosecond(startt);
     double elapsed = ((double) elapsed_ns) / 1e9;
     printf("processed %d samples in %lu ns. speed: %f Msps\n", i, elapsed_ns, i / elapsed / 1e6);
 
@@ -977,7 +977,7 @@ int detect_short_training_start(fftw_complex *samples, int size, double correlat
     int i;
 
     //timer for profiling the code
-    uint64_t startt;
+    nanotimer_t startt;
     startt = start_timer();
 
     for (i = 0; i < size - 64; i++) {
@@ -994,7 +994,7 @@ int detect_short_training_start(fftw_complex *samples, int size, double correlat
         }
     }
 
-    uint64_t elapsed_ns = elapsed_nanosecond(startt);
+    nanotimer_t elapsed_ns = elapsed_nanosecond(startt);
     double elapsed = ((double) elapsed_ns) / 1e9;
     printf("processed %d samples in %lu ns. speed: %f Msps\n", i, elapsed_ns, i / elapsed / 1e6);
 

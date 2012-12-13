@@ -22,8 +22,6 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-#include <stdint.h>
-
 /**
  * For profiling DSP operations in the project we need a resolution down to
  * nanoseconds, which cannot be reached using gettimeofday(). Linux and Mac
@@ -37,7 +35,7 @@
 #include <time.h>
 #endif
 
-typedef uint64_t nanotimer_t;
+typedef unsigned long int nanotimer_t;
 
 /**
  * Starts a timer which can be used afterwards to compute elapsed time
