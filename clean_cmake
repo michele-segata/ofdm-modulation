@@ -1,0 +1,5 @@
+#!/bin/bash
+rm -rf `find . -name '*CMakeFiles*'`
+rm -rf `find . -name '*.cmake' | grep -v Modules/`
+rm -rf `find . -name '*CMakeCache*'`
+rm -rf `find . -name 'Makefile'`
