@@ -51,6 +51,6 @@ nanotimer_t start_timer();
  * \param timer the timer started with start_timer()
  * \return the elapsed nanoseconds from the moment time has been started
  */
-uint64_t elapsed_nanosecond(nanotimer_t timer);
+nanotimer_t elapsed_nanosecond(nanotimer_t timer);
 
 #endif
