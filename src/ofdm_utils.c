@@ -26,6 +26,7 @@
 
 #include "ofdm_utils.h"
 #include "bit_utils.h"
+#include "utils.h"
 
 int max(int a, int b) {
     return a > b ? a : b;
@@ -834,4 +835,169 @@ void zero_samples(fftw_complex *samples, int size) {
         samples[i][0] = 0;
         samples[i][1] = 0;
     }
+}
+inline double complex_magnitude(fftw_complex a) {
+    return sqrt(pow(a[0], 2) + pow(a[1], 2));
+}
+
+inline void complex_product(fftw_complex a, fftw_complex b, fftw_complex *res) {
+    (*res)[0] = a[0] * b[0] - a[1] * b[1];
+    (*res)[1] = a[0] * b[1] + a[1] * b[0];
+}
+
+inline double update_conj_product(double current_product, fftw_complex sample_a, fftw_complex sample_b, int sum) {
+    current_product += sum * sample_a[0] * sample_b[0];
+    current_product += sum * sample_a[1] * sample_b[1];
+    return current_product;
+}
+int compute_autocorrelation(fftw_complex *samples, int size) {
+
+    //performance counters
+    timer_t startt;
+
+    int start_seq = -1;
+
+    //number of samples taken into account for computing the autocorrelation
+    int n_autocorrelation_samples = 48;
+    int L = 32;
+    double *norm = calloc(size, sizeof(double));
+    int i;
+    double upperProduct = 0, lowerProduct = 0;
+    double auto_correlation, threshold = 1.2;
+
+    assert(size >= n_autocorrelation_samples);
+
+    startt = start_timer();
+
+    //accumulate auto correlation for first scanWindowSize samples
+    for (i = 1; i <= L; i++) {
+        upperProduct = update_conj_product(upperProduct, samples[n_autocorrelation_samples - i], samples[n_autocorrelation_samples - i - 16], 1);
+        lowerProduct += pow(samples[i + 16][0], 2) + pow(samples[i + 16][1], 2);
+    }
+
+    for (i = 0; i < size; ++i) {
+        norm[i] = pow(samples[i][0], 2) + pow(samples[i][1], 2);
+    }
+
+    //compute first autocorrelation value
+    assert(lowerProduct != 0);
+    auto_correlation = upperProduct / lowerProduct;
+
+    if (auto_correlation > threshold) {
+        //found short sequence start at first sample: stop autocorrelator and return
+        start_seq = 0;
+    }
+
+    //otherwise go on samples by samples
+
+    int start = 1;
+    int max = size - n_autocorrelation_samples;
+    while (start < max) {
+
+        //insert into upper product new sample
+        upperProduct = update_conj_product(upperProduct, samples[n_autocorrelation_samples + start], samples[n_autocorrelation_samples + start - 16], 1);
+        //remove from upper product old sample
+        upperProduct = update_conj_product(upperProduct, samples[n_autocorrelation_samples + start - L], samples[n_autocorrelation_samples + start - L - 16], -1);
+        //insert into lower product norm of new sample
+        lowerProduct += pow(samples[L + start + 16][0], 2) + pow(samples[L + start + 16][1], 2);
+        //remove from lower product norm of old sample
+        lowerProduct -= pow(samples[start + 15][0], 2) + pow(samples[start + 15][1], 2);
+
+        assert(lowerProduct != 0);
+        //compute new autocorrelation value
+        auto_correlation = upperProduct / lowerProduct;
+
+        if (auto_correlation > threshold) {
+            start_seq = start;
+            break;
+            //found short sequence start: stop autocorrelator and return
+        }
+
+        //printf("sample %d corr %f\n", start, auto_correlation);
+
+        start++;
+
+    }
+
+    uint64_t elapsed_ns = elapsed_nanosecond(startt);
+    double elapsed = ((double) elapsed_ns) / 1e9;    //(end_time.tv_usec - start_time.tv_usec) / 1.0e6 + end_time.tv_sec - start_time.tv_sec;
+    printf("processed %d samples in %llu ns. speed: %f Msps\n", start, elapsed_ns, size / elapsed / 1e6);
+
+    return start_seq;
+
+}
+
+double compute_correlation(fftw_complex *samples, fftw_complex *known_samples, int size) {
+
+    fftw_complex correlation = { 0, 0 };
+    double norm_factor = 0;
+
+    int i;
+
+    for (i = 0; i < size; i++) {
+        norm_factor += pow(samples[i][0], 2) + pow(samples[i][1], 2);
+    }
+
+    for (i = 0; i < size; i++) {
+        fftw_complex product;
+        complex_product(samples[i], known_samples[i], &product);
+        correlation[0] += product[0];
+        correlation[1] += product[1];
+    }
+
+    correlation[0] *= sqrt(norm_factor);
+    correlation[1] *= sqrt(norm_factor);
+
+    return complex_magnitude(correlation) / norm_factor;
+
+}
+
+int detect_long_training_start(fftw_complex *samples, int size) {
+
+    int i;
+
+    uint64_t startt;
+    startt = start_timer();
+
+    for (i = 0; i < size - 64; i++) {
+        if (compute_correlation(&samples[i], time_long_symbol, 64) > 2) {
+            break;
+        }
+    }
+
+    uint64_t elapsed_ns = elapsed_nanosecond(startt);
+    double elapsed = ((double) elapsed_ns) / 1e9;
+    printf("processed %d samples in %llu ns. speed: %f Msps\n", i, elapsed_ns, i / elapsed / 1e6);
+
+}
+
+int detect_short_training_start(fftw_complex *samples, int size, double correlation_threshold) {
+
+    int short_training_start = -1;
+    int i;
+
+    //timer for profiling the code
+    uint64_t startt;
+    startt = start_timer();
+
+    for (i = 0; i < size - 64; i++) {
+        /**
+         * This way of computing the autocorrelation might seem stupid because
+         * we are re-doing operation for each new time sample. However, if the
+         * compiler optimizes the code for SIMD instructions, this will be much
+         * faster than the smarter way of computing autocorrelation
+         */
+//        compute_correlation(&samples[i], &samples[i+16], 48);
+        if (compute_correlation(&samples[i], &samples[i+16], 48) > correlation_threshold) {
+            short_training_start = i;
+            break;
+        }
+    }
+
+    uint64_t elapsed_ns = elapsed_nanosecond(startt);
+    double elapsed = ((double) elapsed_ns) / 1e9;
+    printf("processed %d samples in %llu ns. speed: %f Msps\n", i, elapsed_ns, i / elapsed / 1e6);
+
+    return short_training_start;
+
 }

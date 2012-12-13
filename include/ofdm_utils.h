@@ -197,6 +197,27 @@ static fftw_complex freq_long_symbol[] = {{1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {1, 
                                              {-1, 0}, {1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0},
                                              {1, 0}, {1, 0}, {1, 0}};
 
+/**
+ * Time domain representation of the long
+ * training symbol
+ */
+static fftw_complex time_long_symbol[] = {{0.156250, 0.000000}, {-0.005121, -0.120325}, {0.039750, -0.111158}, {0.096832, 0.082798},
+                                          {0.021112, 0.027886}, {0.059824, -0.087707}, {-0.115131, -0.055180}, {-0.038316, -0.106171},
+                                          {0.097541, -0.025888}, {0.053338, 0.004076}, {0.000989, -0.115005}, {-0.136805, -0.047380},
+                                          {0.024476, -0.058532}, {0.058669, -0.014939}, {-0.022483, 0.160657}, {0.119239, -0.004096},
+                                          {0.062500, -0.062500}, {0.036918, 0.098344}, {-0.057206, 0.039299}, {-0.131263, 0.065227},
+                                          {0.082218, 0.092357}, {0.069557, 0.014122}, {-0.060310, 0.081286}, {-0.056455, -0.021804},
+                                          {-0.035041, -0.150888}, {-0.121887, -0.016566}, {-0.127324, -0.020501}, {0.075074, -0.074040},
+                                          {-0.002806, 0.053774}, {-0.091888, 0.115129}, {0.091717, 0.105872}, {0.012285, 0.097600},
+                                          {-0.156250, 0.000000}, {0.012285, -0.097600}, {0.091717, -0.105872}, {-0.091888, -0.115129},
+                                          {-0.002806, -0.053774}, {0.075074, 0.074040}, {-0.127324, 0.020501}, {-0.121887, 0.016566},
+                                          {-0.035041, 0.150888}, {-0.056455, 0.021804}, {-0.060310, -0.081286}, {0.069557, -0.014122},
+                                          {0.082218, -0.092357}, {-0.131263, -0.065227}, {-0.057206, -0.039299}, {0.036918, -0.098344},
+                                          {0.062500, 0.062500}, {0.119239, 0.004096}, {-0.022483, -0.160657}, {0.058669, 0.014939},
+                                          {0.024476, 0.058532}, {-0.136805, 0.047380}, {0.000989, 0.115005}, {0.053338, -0.004076},
+                                          {0.097541, 0.025888}, {-0.038316, 0.106171}, {-0.115131, 0.055180}, {0.059824, 0.087707},
+                                          {0.021112, -0.027886}, {0.096832, -0.082798}, {0.039750, 0.111158}, {-0.005121, 0.120325}};
+
 
 /**
  * Perform the scrambling of a set of bytes, as mandated by
@@ -474,5 +495,35 @@ void generate_data_field(const char *psdu, int length, enum DATA_RATE data_rate,
  * \param size size of the array
  */
 void zero_samples(fftw_complex *samples, int size);
+
+/**
+ * Compute autocorrelation
+ */
+int compute_autocorrelation(fftw_complex *samples, int size);
+
+/**
+ * Computes the correlation between two sets of complex time domain samples. The complexity
+ * of this method is O(size)
+ *
+ * \param samples first set of samples (e.g., the wireless signal coming from the radio)
+ * \param known_samples second set of samples (e.g., the OFDM long training sequence)
+ * \param size number of complex samples into the two sets
+ * \return the correlation between samples and known_samples
+ */
+double compute_correlation(fftw_complex *samples, fftw_complex *known_samples, int size);
+
+/**
+ * Detects the start of the short training sequence (if any) into a set of complex time
+ * samples. The function computes an autocorrelation and the returns the index of the
+ * first time samples where the autocorrelation values exceeds the given threshold
+ *
+ * \param samples set of complex time samples
+ * \param size number of complex time samples into the set
+ * \param correlation_threshold correlation threshold to be used for declaring the beginning
+ * of a short training sequence
+ * \return the index of the first time samples exceeding the correlation threshold or -1 if
+ * none is found
+ */
+int detect_short_training_start(fftw_complex *samples, int size, double correlation_threshold);
 
 #endif
