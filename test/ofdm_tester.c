@@ -158,6 +158,10 @@ int main(int argc, char **argv) {
         printf("%d %.3f %.3f\n", i, iv, qv);
     }
 
+    compute_autocorrelation(mod_samples, FRAME_SIZE(tx_params.n_sym));
+    detect_short_training_start(mod_samples, FRAME_SIZE(tx_params.n_sym), 1.2);
+    detect_long_training_start(mod_samples, FRAME_SIZE(tx_params.n_sym));
+
     free(data);
     free(scrambled_data);
     free(encoded_data);
