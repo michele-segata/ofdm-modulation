@@ -174,3 +174,145 @@ void generate_mac_data_frame(const char *msdu, int msdu_size, struct MAC_DATAFRA
     memcpy(*psdu + msdu_size + 24, &fcs, sizeof(unsigned int));
 
 }
+
+void print_frame_control_field(dbyte frame_control, FILE *f) {
+
+    char type, subtype;
+    dbyte fc;
+
+    //copy frame control and swap endianness. MAC format is LSB to MSB
+    construct_dbyte(frame_control[0], frame_control[1], &fc);
+    change_array_endianness(fc, 2, fc);
+
+    fprintf(f, "MAC control field:\n");
+    fprintf(f, "\tProtocol version: \t%x\n", get_bit_group_value(fc, 2, 0, 2));
+    type = get_bit_group_value(fc, 2, 2, 2);
+    fprintf(f, "\tFrame type: \t\t%s\n", STR_FC_TYPE[type]);
+    subtype = get_bit_group_value(fc, 2, 4, 4);
+    fprintf(f, "\tFrame subtype: \t\t");
+    switch (type) {
+    case TYPE_DATA:
+        fprintf(f, "%s\n", STR_FC_DATA_SUBTYPE[subtype]);
+        break;
+    case TYPE_MANAGEMENT:
+        fprintf(f, "%s\n", STR_FC_MANAGEMENT_SUBTYPE[subtype]);
+        break;
+    case TYPE_CONTROL:
+        fprintf(f, "%s\n", STR_FC_CONTROL_SUBTYPE[subtype]);
+        break;
+    case TYPE_RESERVED:
+        fprintf(f, "%s\n", STR_FC_RESERVED_SUBTYPE[subtype]);
+        break;
+    }
+    fprintf(f, "\tToDS:\t\t\t%d\n", get_bit(fc[1], 7) == 1 ? 1 : 0);
+    fprintf(f, "\tFromDS:\t\t\t%d\n", get_bit(fc[1], 6) == 1 ? 1 : 0);
+    fprintf(f, "\tMore fragments:\t\t%d\n", get_bit(fc[1], 5) == 1 ? 1 : 0);
+    fprintf(f, "\tRetry:\t\t\t%d\n", get_bit(fc[1], 4) == 1 ? 1 : 0);
+    fprintf(f, "\tPower management:\t%d\n", get_bit(fc[1], 3) == 1 ? 1 : 0);
+    fprintf(f, "\tMore data:\t\t%d\n", get_bit(fc[1], 2) == 1 ? 1 : 0);
+    fprintf(f, "\tProtected frame:\t%d\n", get_bit(fc[1], 1) == 1 ? 1 : 0);
+    fprintf(f, "\tOrder:\t\t\t%d\n", get_bit(fc[1], 0) == 1 ? 1 : 0);
+
+}
+
+void set_frame_control_bit(dbyte *frame_control, int i, int b, int lsb) {
+    dbyte fc;
+    construct_dbyte((*frame_control)[0], (*frame_control)[1], &fc);
+    //if not in the correct endianess, swap it
+    if (lsb) {
+        change_array_endianness(fc, 2, fc);
+    }
+    //set the bit
+    set_bit(&fc[i/8], i%8, b);
+    //if needed swap endianess again
+    if (lsb) {
+        change_array_endianness(fc, 2, fc);
+    }
+    construct_dbyte(fc[0], fc[1], frame_control);
+}
+char get_frame_control_bit(dbyte frame_control, int i, int lsb) {
+    dbyte fc;
+    construct_dbyte(frame_control[0], frame_control[1], &fc);
+    //if not in the correct endianess, swap it
+    if (lsb) {
+        change_array_endianness(fc, 2, fc);
+    }
+    //set the bit
+    return get_bit(fc[i/8], i%8);
+}
+
+void set_frame_control_version(dbyte *frame_control, char version, int lsb) {
+    //notice: get_bit bit index is inverted as get_bit works in LSB
+    set_frame_control_bit(frame_control, 0, get_bit(version, 1), lsb);
+    set_frame_control_bit(frame_control, 1, get_bit(version, 0), lsb);
+}
+
+void set_frame_control_type(dbyte *frame_control, enum FC_TYPE type, int lsb) {
+    //notice: get_bit bit index is inverted as get_bit works in LSB
+    set_frame_control_bit(frame_control, 2, get_bit(type, 1), lsb);
+    set_frame_control_bit(frame_control, 3, get_bit(type, 0), lsb);
+}
+
+void set_frame_control_subtype(dbyte *frame_control, char subtype, int lsb) {
+    //notice: get_bit bit index is inverted as get_bit works in LSB
+    set_frame_control_bit(frame_control, 4, get_bit(subtype, 3), lsb);
+    set_frame_control_bit(frame_control, 5, get_bit(subtype, 2), lsb);
+    set_frame_control_bit(frame_control, 6, get_bit(subtype, 1), lsb);
+    set_frame_control_bit(frame_control, 7, get_bit(subtype, 0), lsb);
+}
+
+void set_frame_control_to_ds(dbyte *frame_control, char to_ds, int lsb) {
+    set_frame_control_bit(frame_control, 8, to_ds, lsb);
+}
+char get_frame_control_to_ds(dbyte frame_control, int lsb) {
+    return get_frame_control_bit(frame_control, 8, lsb);
+}
+
+void set_frame_control_from_ds(dbyte *frame_control, char from_ds, int lsb) {
+    set_frame_control_bit(frame_control, 9, from_ds, lsb);
+}
+char get_frame_control_from_ds(dbyte frame_control, int lsb) {
+    return get_frame_control_bit(frame_control, 9, lsb);
+}
+
+void set_frame_control_more_fragment(dbyte *frame_control, char more_fragment, int lsb) {
+    set_frame_control_bit(frame_control, 10, more_fragment, lsb);
+}
+char get_frame_control_more_fragment(dbyte frame_control, int lsb) {
+    return get_frame_control_bit(frame_control, 10, lsb);
+}
+
+void set_frame_control_retry(dbyte *frame_control, char retry, int lsb) {
+    set_frame_control_bit(frame_control, 11, retry, lsb);
+}
+char get_frame_control_retry(dbyte frame_control, int lsb) {
+    return get_frame_control_bit(frame_control, 11, lsb);
+}
+
+void set_frame_control_power_management(dbyte *frame_control, char power_management, int lsb) {
+    set_frame_control_bit(frame_control, 12, power_management, lsb);
+}
+char get_frame_control_power_management(dbyte frame_control, int lsb) {
+    return get_frame_control_bit(frame_control, 12, lsb);
+}
+
+void set_frame_control_more_data(dbyte *frame_control, char more_data, int lsb) {
+    set_frame_control_bit(frame_control, 13, more_data, lsb);
+}
+char get_frame_control_more_data(dbyte frame_control, int lsb) {
+    return get_frame_control_bit(frame_control, 13, lsb);
+}
+
+void set_frame_control_protected_frame(dbyte *frame_control, char protected_frame, int lsb) {
+    set_frame_control_bit(frame_control, 14, protected_frame, lsb);
+}
+char get_frame_control_protected_frame(dbyte frame_control, int lsb) {
+    return get_frame_control_bit(frame_control, 14, lsb);
+}
+
+void set_frame_control_order(dbyte *frame_control, char order, int lsb) {
+    set_frame_control_bit(frame_control, 15, order, lsb);
+}
+char get_frame_control_order(dbyte frame_control, int lsb) {
+    return get_frame_control_bit(frame_control, 15, lsb);
+}

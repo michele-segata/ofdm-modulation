@@ -35,10 +35,10 @@ void usage(const char *argv0) {
     printf("Usage %s: [-h] [-s sender mac address] [-r receiver mac address] [-b bssid] [-n sequence number] [-c control field] "
             "[-f format] [-o output] [-p payload] [-r]\n\n"
             "\t-h\tPrint this help and exit\n\n"
-            "\t-s\tSet sender MAC address. If not specified, 00:60:08:ad:3b:af is used.\n"
+            "\t-b\tSet address1 field. If not specified, 00:60:08:cd:37:a6 is used\n\n"
             "\t\tThe format of any MAC address must be colon separated hexadecimal values\n\n"
-            "\t-a\tSet receiver MAC address. If not specified, 00:20:d6:01:3c:f1 is used\n\n"
-            "\t-b\tSet the BSSID. If not specified, 00:60:08:cd:37:a6 is used\n\n"
+            "\t-a\tSet address2 field. If not specified, 00:20:d6:01:3c:f1 is used\n\n"
+            "\t-s\tSet address3. If not specified, 00:60:08:ad:3b:af is used.\n"
             "\t-n\tSet the sequence number. If repeat is specified, this will be used as starting value.\n"
             "\t\tBy default it is set to 0\n\n"
             "\t-c\tSet the MAC header frame control field. It must be made by two hexadecimal values.\n"
@@ -118,9 +118,9 @@ int main(int argc, char **argv) {
     //command line argument parsing
 
     /**
-     * s sender
-     * a receiver
-     * b bssid
+     * s address3
+     * a address2
+     * b address1
      * n sequence number
      * c control
      * h help
@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
      */
 
     //sender, receiver and bssid addresses
-    char *sender = 0, *receiver = 0, *bssid = 0;
+    char *address3 = 0, *address2 = 0, *address1 = 0;
     //sequence number
     char sequence = 0;
     //control field (2 bytes)
@@ -166,17 +166,17 @@ int main(int argc, char **argv) {
 
         case 's':
             //set sender address
-            copy_argument(&sender, optarg);
+            copy_argument(&address3, optarg);
             break;
 
         case 'a':
             //set receiver address
-            copy_argument(&receiver, optarg);
+            copy_argument(&address2, optarg);
             break;
 
         case 'b':
             //set bssid address
-            copy_argument(&bssid, optarg);
+            copy_argument(&address1, optarg);
             break;
 
         case 'n':
@@ -327,11 +327,15 @@ int main(int argc, char **argv) {
          * r repeat
          * d data
          */
-    header = generate_mac_header(frame_control, duration, bssid, receiver, sender, sequence);
-    fprintf(stderr, "Sender MAC address:\t"); print_mac_address(header.address3, stderr); fprintf(stderr, "\n");
-    fprintf(stderr, "Receiver MAC address:\t"); print_mac_address(header.address2, stderr); fprintf(stderr, "\n");
-    fprintf(stderr, "BSSID:\t\t\t"); print_mac_address(header.address1, stderr); fprintf(stderr, "\n");
+    header = generate_mac_header(frame_control, duration, address1, address2, address3, sequence);
+    char to_from_ds;
+    set_bit(&to_from_ds, 0, get_frame_control_from_ds(header.frame_control, 0));
+    set_bit(&to_from_ds, 1, get_frame_control_to_ds(header.frame_control, 0));
+    fprintf(stderr, "Address1:\t\t"); print_mac_address(header.address1, stderr); fprintf(stderr, " (%s)\n", STR_DATA_ADDRESSES_FUNCTIONALITY[to_from_ds][0]);
+    fprintf(stderr, "Address2:\t\t"); print_mac_address(header.address2, stderr); fprintf(stderr, " (%s)\n", STR_DATA_ADDRESSES_FUNCTIONALITY[to_from_ds][1]);
+    fprintf(stderr, "Address3:\t\t"); print_mac_address(header.address3, stderr); fprintf(stderr, " (%s)\n", STR_DATA_ADDRESSES_FUNCTIONALITY[to_from_ds][2]);
     fprintf(stderr, "Frame control field:\t%02hhx%02hhx\n", header.frame_control[0], header.frame_control[1]);
+    print_frame_control_field(header.frame_control, stderr);
     fprintf(stderr, "Data rate:\t\t%d Mbps\n", data_rate);
     fprintf(stderr, "Sequence number:\t%d\n", (int)sequence);
     fprintf(stderr, "Output file:\t\t%s\n", outfile ? outfile : "stdout");
@@ -364,7 +368,8 @@ int main(int argc, char **argv) {
         int rb = strlen(msdu);
 
         //generate custom mac header
-        header = generate_mac_header(frame_control, duration, bssid, receiver, sender, sequence);
+
+        header = generate_mac_header(frame_control, duration, address1, address2, address3, sequence);
 
         //then generate the PSDU
         generate_mac_data_frame(msdu, rb, header, &psdu, &psdu_length);
@@ -456,9 +461,9 @@ int main(int argc, char **argv) {
 
     fclose(f);
     free(outfile);
-    free(sender);
-    free(receiver);
-    free(bssid);
+    free(address3);
+    free(address2);
+    free(address1);
     free(payload);
 
     fftw_free(mod);

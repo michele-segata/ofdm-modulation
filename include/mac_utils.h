@@ -44,10 +44,184 @@ typedef byte dbyte[2];
 struct MAC_DATAFRAME_HEADER {
     dbyte frame_control;        //protocol version, type, subtype, to_ds, from_ds, ...
     dbyte duration;             //duration field
-    mac_address_t address1;  //address 1 indicating BSSID: 6 bytes MAC address
-    mac_address_t address2;  //address 2 indicating receiver
-    mac_address_t address3;  //address 3 indicating sender
+    mac_address_t address1;     //address 1
+    mac_address_t address2;     //address 2
+    mac_address_t address3;     //address 3
     dbyte sequence;             //sequence number plus fragment number
+};
+
+/**
+ * Frame control field type. Notice that all field values defined for the MAC
+ * frame control field, are meant as LSB -> MSB, so the opposite of what has
+ * been defined in table 8-1 in 802.11-2012 standard. This is because all the
+ * set_bit and get_bit functions work in LSB -> MSB
+ */
+enum FC_TYPE {
+    TYPE_MANAGEMENT = 0,
+    TYPE_CONTROL = 1,
+    TYPE_DATA = 2,
+    TYPE_RESERVED = 3
+};
+static const char* STR_FC_TYPE[] = {
+    "MANAGEMENT",
+    "CONTROL",
+    "DATA",
+    "RESERVED"
+};
+
+/**
+ * Frame control field subtype: data
+ */
+enum FC_DATA_SUBTYPE {
+    DATA_DATA = 0,
+    DATA_CF_ACK = 1,
+    DATA_CF_POLL = 2,
+    DATA_CF_ACK_CF_POLL = 3,
+    NULL_DATA = 4,
+    CF_ACK = 5,
+    CF_POLL = 6,
+    CF_ACK_CF_POLL = 7,
+    QOS_DATA = 8,
+    QOS_DATA_CF_ACK = 9,
+    QOS_DATA_CF_POLL = 10,
+    QOS_DATA_CF_ACK_CF_POLL = 11,
+    QOS_NULL = 12,
+    DATA_RESERVED = 13,
+    QOS_CF_POLL = 14,
+    QOS_CF_ACK_CF_POLL = 15
+};
+static const char* STR_FC_DATA_SUBTYPE[] = {
+    "DATA",
+    "DATA_CF_ACK",
+    "DATA_CF_POLL",
+    "DATA_CF_ACK_CF_POLL",
+    "NULL_DATA",
+    "CF_ACK",
+    "CF_POLL",
+    "CF_ACK_CF_POLL",
+    "QOS_DATA",
+    "QOS_DATA_CF_ACK",
+    "QOS_DATA_CF_POLL",
+    "QOS_DATA_CF_ACK_CF_POLL",
+    "QOS_NULL",
+    "RESERVED",
+    "QOS_CF_POLL",
+    "QOS_CF_ACK_CF_POLL"
+};
+
+/**
+ * Frame control field subtype: management
+ */
+enum FC_MANAGEMENT_SUBTYPE {
+    ASSOCIATION_REQUEST = 0,
+    ASSOCIATION_RESPONSE = 1,
+    REASSOCIATION_REQUEST = 2,
+    REASSOCIATION_RESPONSE = 3,
+    PROBE_REQUEST = 4,
+    PROBE_RESPONSE = 5,
+    TIMING_ADVERTISEMENT = 6,
+    RESERVED = 7,
+    BEACON = 8,
+    ATIM = 9,
+    DISASSOCIATION = 10,
+    AUTHENTICATION = 11,
+    DEAUTHENTICATION = 12,
+    ACTION = 13,
+    ACTION_NO_ACK = 14,
+    MANAGEMENT_RESERVED = 15
+};
+static const char* STR_FC_MANAGEMENT_SUBTYPE[] = {
+    "ASSOCIATION_REQUEST",
+    "ASSOCIATION_RESPONSE",
+    "REASSOCIATION_REQUEST",
+    "REASSOCIATION_RESPONSE",
+    "PROBE_REQUEST",
+    "PROBE_RESPONSE",
+    "TIMING_ADVERTISEMENT",
+    "RESERVED",
+    "BEACON",
+    "ATIM",
+    "DISASSOCIATION",
+    "AUTHENTICATION",
+    "DEAUTHENTICATION",
+    "ACTION",
+    "ACTION_NO_ACK",
+    "RESERVED"
+};
+
+/**
+ * Frame control field subtype: control
+ */
+enum FC_CONTROL_SUBTYPE {
+    CONTROL_RESERVED_FIRST = 0,
+    CONTROL_RESERVED_LAST = 6,
+    CONTROL_WRAPPER = 7,
+    BLOCK_ACK_REQUEST = 8,
+    BLOCK_ACK = 9,
+    PS_POLL = 10,
+    RTS = 11,
+    CTS = 12,
+    ACK = 13,
+    CF_END = 14,
+    CF_END_CF_ACK = 15
+};
+static const char* STR_FC_CONTROL_SUBTYPE[] = {
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "CONTROL_WRAPPER",
+    "BLOCK_ACK_REQUEST",
+    "BLOCK_ACK",
+    "PS_POLL",
+    "RTS",
+    "CTS",
+    "ACK",
+    "CF_END"
+};
+
+/**
+ * Frame control field subtype: reserved
+ */
+enum FC_RESERVED_SUBTYPE {
+    RESERVED_RESERVED_FIRST = 0,
+    RESERVED_RESERVED_LAST = 15
+};
+static const char* STR_FC_RESERVED_SUBTYPE[] = {
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED",
+    "RESERVED"
+};
+
+/**
+ * Addresses functionalities as function of the ToDS and FromDS fields,
+ * valid only for DATA frames!!!
+ */
+static const char *STR_DATA_ADDRESSES_FUNCTIONALITY[4][4] = {
+    //ToDS = 0, FromDS = 0
+    {"Destination", "Source", "BSSID", "Not used"},
+    //ToDS = 0, FromDS = 1
+    {"Destination", "BSSID", "Source", "Not used"},
+    //ToDS = 1, FromDS = 0
+    {"BSSID", "Source", "Destination", "Not used"},
+    //ToDS = 1, FromDS = 1
+    {"Receiver", "Transmitter", "Destination", "Source"},
 };
 
 /**
@@ -129,5 +303,131 @@ struct MAC_DATAFRAME_HEADER generate_default_mac_header();
  * will be stored
  */
 void generate_mac_data_frame(const char *msdu, int msdu_size, struct MAC_DATAFRAME_HEADER header, char **psdu, int *psdu_size);
+
+/**
+ * Given a MAC control field, prints the textual representation of it
+ *
+ * \param frame_control frame control field
+ * \param f output file
+ */
+void print_frame_control_field(dbyte frame_control, FILE *f);
+
+/**
+ * Set a bit in the frame control field
+ *
+ * \param frame_control frame control field
+ * \param i index of the bit
+ * \param b bit value
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_bit(dbyte *frame_control, int i, int b, int lsb);
+char get_frame_control_bit(dbyte frame_control, int i, int lsb);
+
+/**
+ * Set protocol version for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param version protocol version to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_version(dbyte *frame_control, char version, int lsb);
+
+/**
+ * Set type for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param type type to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_type(dbyte *frame_control, enum FC_TYPE type, int lsb);
+
+/**
+ * Set subtype for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param subtype subtype to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_subtype(dbyte *frame_control, char subtype, int lsb);
+
+/**
+ * Set from DS for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param from_ds fromDS to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_from_ds(dbyte *frame_control, char from_ds, int lsb);
+char get_frame_control_from_ds(dbyte frame_control, int lsb);
+
+/**
+ * Set to DS for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param to_ds toDS to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_to_ds(dbyte *frame_control, char to_ds, int lsb);
+char get_frame_control_to_ds(dbyte frame_control, int lsb);
+
+/**
+ * Set more fragment for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param more_fragment more fragment to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_more_fragment(dbyte *frame_control, char more_fragment, int lsb);
+char get_frame_control_more_fragment(dbyte frame_control, int lsb);
+
+/**
+ * Set retry for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param retry retry to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_retry(dbyte *frame_control, char retry, int lsb);
+char get_frame_control_retry(dbyte frame_control, int lsb);
+
+/**
+ * Set power management for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param power_management power management to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_power_management(dbyte *frame_control, char power_management, int lsb);
+char get_frame_control_power_management(dbyte frame_control, int lsb);
+
+/**
+ * Set more data for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param more_data more data to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_more_data(dbyte *frame_control, char more_data, int lsb);
+char get_frame_control_more_data(dbyte frame_control, int lsb);
+
+/**
+ * Set protected frame for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param protected_frame protected frame to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_protected_frame(dbyte *frame_control, char protected_frame, int lsb);
+char get_frame_control_protected_frame(dbyte frame_control, int lsb);
+
+/**
+ * Set order for MAC control field
+ *
+ * \param frame_control frame control field
+ * \param order order to be set
+ * \param lsb first bit of frame control is the LSB
+ */
+void set_frame_control_order(dbyte *frame_control, char order, int lsb);
+char get_frame_control_order(dbyte frame_control, int lsb);
 
 #endif /* MAC_UTILS_H_ */
