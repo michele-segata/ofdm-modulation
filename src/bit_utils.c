@@ -82,7 +82,7 @@ void print_complex_array(fftw_complex *c, int size) {
     }
 }
 
-inline int get_bit(char b, int i) {
+inline int get_bit(int b, int i) {
     return (b & (1 << i) ? 1 : 0);
 }
 
