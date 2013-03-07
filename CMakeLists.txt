@@ -14,6 +14,11 @@ else(${CMAKE_BUILD_TYPE} MATCHES "Release")
 endif()
 
 # enable/disable electric fence library
+
+if (NOT ENABLE_EFENCE)
+	set(ENABLE_EFENCE OFF CACHE BOOL "Enable/disable linking against electric fence")
+endif()
+
 if (ENABLE_EFENCE)
     # Add efence link
     find_library(EFENCE_LIBRARY NAMES efence PATHS /opt/local/lib/)
