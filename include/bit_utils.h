@@ -97,7 +97,7 @@ void print_complex_array(fftw_complex *c, int size);
  * \param i the bit index
  * \return value of the i-th bit of b
  */
-inline int get_bit(int b, int i);
+int get_bit(int b, int i);
 
 /**
  * Sets the i-th bit of a byte.
@@ -108,7 +108,7 @@ inline int get_bit(int b, int i);
  * \param i the bit index
  * \param bit value of the bit to set
  */
-inline void set_bit(char *b, int i, int bit);
+void set_bit(char *b, int i, int bit);
 
 /**
  * Returns the i-th bit in a string of bytes.

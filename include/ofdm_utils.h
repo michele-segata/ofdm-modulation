@@ -536,5 +536,6 @@ double compute_correlation(fftw_complex *samples, fftw_complex *known_samples, i
  * none is found
  */
 int detect_short_training_start(fftw_complex *samples, int size, double correlation_threshold);
+int detect_long_training_start(fftw_complex *samples, int size);
 
 #endif

@@ -79,10 +79,10 @@ int main(int argc, char **argv) {
 	tx_params = get_tx_parameters(params.data_rate, rb);
 
 	//alloc memory for modulation steps
-	scrambled_data = calloc(len, sizeof(char));
-	encoded_data = calloc(len * 2, sizeof(char));
-	punctured_data = calloc(tx_params.n_encoded_data_bytes, sizeof(char));
-	interleaved_data = calloc(tx_params.n_encoded_data_bytes, sizeof(char));
+	scrambled_data = (char*)calloc(len, sizeof(char));
+	encoded_data = (char*)calloc(len * 2, sizeof(char));
+	punctured_data = (char*)calloc(tx_params.n_encoded_data_bytes, sizeof(char));
+	interleaved_data = (char*)calloc(tx_params.n_encoded_data_bytes, sizeof(char));
 	mod = fftw_alloc_complex(N_DATA_SUBCARRIERS);
 	pil = fftw_alloc_complex(N_TOTAL_SUBCARRIERS);
 	ifft = fftw_alloc_complex(FFT_SIZE);

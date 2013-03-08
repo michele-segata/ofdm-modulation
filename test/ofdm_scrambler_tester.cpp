@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
 	generate_data_field(psdu, rb, params.data_rate, &data, &len);
 
 	//alloc memory for modulation steps
-	scrambled_data = calloc(len, sizeof(char));
+	scrambled_data = (char*)calloc(len, sizeof(char));
 
 	//first step, scrambling
 	scramble_with_initial_state(data, scrambled_data, len, 0x5D);

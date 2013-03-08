@@ -856,7 +856,7 @@ int compute_autocorrelation(fftw_complex *samples, int size) {
 	//number of samples taken into account for computing the autocorrelation
 	int n_autocorrelation_samples = 48;
 	int L = 32;
-	double *norm = calloc(size, sizeof(double));
+	double *norm = (double*)calloc(size, sizeof(double));
 	int i;
 	double upperProduct = 0, lowerProduct = 0;
 	double auto_correlation, threshold = 1.2;
