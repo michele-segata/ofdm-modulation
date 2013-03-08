@@ -23,20 +23,20 @@
 
 nanotimer_t start_timer() {
 #ifdef __APPLE__
-    return mach_absolute_time();
+	return mach_absolute_time();
 #else
-    struct timespec current_time;
-    clock_gettime(CLOCK_REALTIME, &current_time);
-    return current_time.tv_sec * 1e9 + current_time.tv_nsec;
+	struct timespec current_time;
+	clock_gettime(CLOCK_REALTIME, &current_time);
+	return current_time.tv_sec * 1e9 + current_time.tv_nsec;
 #endif
 }
 
 nanotimer_t elapsed_nanosecond(nanotimer_t timer) {
 #ifdef __APPLE__
-    return mach_absolute_time() - timer;
+	return mach_absolute_time() - timer;
 #else
-    struct timespec current_time;
-    clock_gettime(CLOCK_REALTIME, &current_time);
-    return current_time.tv_sec * 1e9 + current_time.tv_nsec - timer;
+	struct timespec current_time;
+	clock_gettime(CLOCK_REALTIME, &current_time);
+	return current_time.tv_sec * 1e9 + current_time.tv_nsec - timer;
 #endif
 }

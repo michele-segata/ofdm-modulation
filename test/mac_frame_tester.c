@@ -14,44 +14,44 @@
  */
 int main(int argc, char **argv) {
 
-    if (argc != 2) {
-        printf("error: missing input file\n");
-        return 1;
-    }
+	if (argc != 2) {
+		printf("error: missing input file\n");
+		return 1;
+	}
 
-    //msdu loaded from data file
-    char msdu[1000];
-    //mac frame
-    char *mac_frame;
-    //length of the mac frame
-    int len;
-    //mac header
-    struct MAC_DATAFRAME_HEADER header;
+	//msdu loaded from data file
+	char msdu[1000];
+	//mac frame
+	char *mac_frame;
+	//length of the mac frame
+	int len;
+	//mac header
+	struct MAC_DATAFRAME_HEADER header;
 
-    //read the msdu from text file
-    int rb = read_hex_from_file(argv[1], msdu, 1000);
+	//read the msdu from text file
+	int rb = read_hex_from_file(argv[1], msdu, 1000);
 
-    if (rb == ERR_CANNOT_READ_FILE) {
-        printf("Cannot read file \"%s\": file not found?\n", argv[1]);
-        return 0;
-    }
-    if (rb == ERR_INVALID_FORMAT) {
-        printf("Invalid file format\n");
-        return 0;
-    }
+	if (rb == ERR_CANNOT_READ_FILE) {
+		printf("Cannot read file \"%s\": file not found?\n", argv[1]);
+		return 0;
+	}
+	if (rb == ERR_INVALID_FORMAT) {
+		printf("Invalid file format\n");
+		return 0;
+	}
 
-    //generate the default mac header of the sample psdu
-    header = generate_default_mac_header();
+	//generate the default mac header of the sample psdu
+	header = generate_default_mac_header();
 
-    //generate mac frame with default parameters
-    generate_mac_data_frame(msdu, rb, header, &mac_frame, &len);
+	//generate mac frame with default parameters
+	generate_mac_data_frame(msdu, rb, header, &mac_frame, &len);
 
-    //output bits and we're done
-    print_hex_array(mac_frame, len, '\n');
-    printf("\n");
+	//output bits and we're done
+	print_hex_array(mac_frame, len, '\n');
+	printf("\n");
 
-    free(mac_frame);
+	free(mac_frame);
 
-    return 0;
+	return 0;
 
 }

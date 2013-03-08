@@ -108,40 +108,44 @@ enum MODULATION_TYPE {
 #define QAM16_NORMALIZATION     0.316227766
 #define QAM64_NORMALIZATION     0.15430335
 
-static const double bpsk_i[] = {-1 * BPSK_NORMALIZATION, 1 * BPSK_NORMALIZATION};
+static const double bpsk_i[] = { -1 * BPSK_NORMALIZATION, 1 * BPSK_NORMALIZATION};
 static const double bpsk_q[] = {0, 0};
 
-static const double qpsk_i[] = {-1 * QPSK_NORMALIZATION, 1 * QPSK_NORMALIZATION};
-static const double qpsk_q[] = {-1 * QPSK_NORMALIZATION, 1 * QPSK_NORMALIZATION};
+static const double qpsk_i[] = { -1 * QPSK_NORMALIZATION, 1 * QPSK_NORMALIZATION};
+static const double qpsk_q[] = { -1 * QPSK_NORMALIZATION, 1 * QPSK_NORMALIZATION};
 
-static const double qam16_i[] = {-3 * QAM16_NORMALIZATION, -1 * QAM16_NORMALIZATION, 3 * QAM16_NORMALIZATION, 1 * QAM16_NORMALIZATION};
-static const double qam16_q[] = {-3 * QAM16_NORMALIZATION, -1 * QAM16_NORMALIZATION, 3 * QAM16_NORMALIZATION, 1 * QAM16_NORMALIZATION};
+static const double qam16_i[] = { -3 * QAM16_NORMALIZATION, -1 * QAM16_NORMALIZATION, 3 * QAM16_NORMALIZATION, 1 * QAM16_NORMALIZATION};
+static const double qam16_q[] = { -3 * QAM16_NORMALIZATION, -1 * QAM16_NORMALIZATION, 3 * QAM16_NORMALIZATION, 1 * QAM16_NORMALIZATION};
 
-static const double qam64_i[] = {-7 * QAM64_NORMALIZATION, -5 * QAM64_NORMALIZATION, -1 * QAM64_NORMALIZATION, -3 * QAM64_NORMALIZATION,
-                                  7 * QAM64_NORMALIZATION,  5 * QAM64_NORMALIZATION,  1 * QAM64_NORMALIZATION,  3 * QAM64_NORMALIZATION};
+static const double qam64_i[] = {
+	-7 * QAM64_NORMALIZATION, -5 * QAM64_NORMALIZATION, -1 * QAM64_NORMALIZATION, -3 * QAM64_NORMALIZATION,
+	7 * QAM64_NORMALIZATION, 5 * QAM64_NORMALIZATION, 1 * QAM64_NORMALIZATION, 3 * QAM64_NORMALIZATION
+};
 
-static const double qam64_q[] = {-7 * QAM64_NORMALIZATION, -5 * QAM64_NORMALIZATION, -1 * QAM64_NORMALIZATION, -3 * QAM64_NORMALIZATION,
-                                  7 * QAM64_NORMALIZATION,  5 * QAM64_NORMALIZATION,  1 * QAM64_NORMALIZATION,  3 * QAM64_NORMALIZATION};
+static const double qam64_q[] = {
+	-7 * QAM64_NORMALIZATION, -5 * QAM64_NORMALIZATION, -1 * QAM64_NORMALIZATION, -3 * QAM64_NORMALIZATION,
+	7 * QAM64_NORMALIZATION, 5 * QAM64_NORMALIZATION, 1 * QAM64_NORMALIZATION, 3 * QAM64_NORMALIZATION
+};
 
 /**
  * Struct containing OFDM parameters for a given
  * datarate and bandwidth
  */
 struct OFDM_PARAMETERS {
-    //data rate
-    enum DATA_RATE          data_rate;
-    //rate field of the SIGNAL header
-    char                    signal_rate;
-    //modulation type
-    enum MODULATION_TYPE    modulation;
-    //code rate
-    enum CODING_RATE        coding_rate;
-    //number of coded bits per sub carrier
-    int                     n_bpsc;
-    //number of coded bits per OFDM symbol
-    int                     n_cbps;
-    //number of data bits per OFDM symbol
-    int                     n_dbps;
+	//data rate
+	enum DATA_RATE data_rate;
+	//rate field of the SIGNAL header
+	char signal_rate;
+	//modulation type
+	enum MODULATION_TYPE modulation;
+	//code rate
+	enum CODING_RATE coding_rate;
+	//number of coded bits per sub carrier
+	int n_bpsc;
+	//number of coded bits per OFDM symbol
+	int n_cbps;
+	//number of data bits per OFDM symbol
+	int n_dbps;
 };
 
 /**
@@ -150,74 +154,81 @@ struct OFDM_PARAMETERS {
  * etc...
  */
 struct TX_PARAMETERS {
-    //data rate used for transmission
-    enum DATA_RATE          data_rate;
-    //PSDU size in bytes
-    int                     psdu_size;
-    //number of OFDM symbols (17-11)
-    int                     n_sym;
-    //number of data bits in the DATA field, including service and padding (17-12)
-    int                     n_data;
-    //number of padding bits in the DATA field (17-13)
-    int                     n_pad;
-    //transmission duration in microseconds
-    int                     duration;
-    //number of data bytes in the DATA field, including service and padding
-    int                     n_data_bytes;
-    //number of data bytes after encoding
-    int                     n_encoded_data_bytes;
+	//data rate used for transmission
+	enum DATA_RATE data_rate;
+	//PSDU size in bytes
+	int psdu_size;
+	//number of OFDM symbols (17-11)
+	int n_sym;
+	//number of data bits in the DATA field, including service and padding (17-12)
+	int n_data;
+	//number of padding bits in the DATA field (17-13)
+	int n_pad;
+	//transmission duration in microseconds
+	int duration;
+	//number of data bytes in the DATA field, including service and padding
+	int n_data_bytes;
+	//number of data bytes after encoding
+	int n_encoded_data_bytes;
 };
 
 /**
  * Defines subcarriers polarities
  */
-static const double subcarrier_polarities[] = {1,1,1,1, -1,-1,-1,1, -1,-1,-1,-1, 1,1,-1,1, -1,-1,1,1, -1,1,1,-1, 1,1,1,1, 1,1,-1,1,
-                                             1,1,-1,1, 1,-1,-1,1, 1,1,-1,1, -1,-1,-1,1, -1,1,-1,-1, 1,-1,-1,1, 1,1,1,1, -1,-1,1,1,
-                                             -1,-1,1,-1, 1,-1,1,1, -1,-1,-1,1, 1,-1,-1,-1, -1,1,-1,-1, 1,-1,1,1, 1,1,-1,1, -1,1,-1,1,
-                                             -1,-1,-1,-1, -1,1,-1,1, 1,-1,1,-1, 1,1,1,-1, -1,1,-1,-1, -1,1,1,1, -1,-1,-1,-1, -1,-1,-1};
+static const double subcarrier_polarities[] = {
+	1, 1, 1, 1, -1, -1, -1, 1, -1, -1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, 1, 1, 1, 1, -1, 1,
+	1, 1, -1, 1, 1, -1, -1, 1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 1, 1, 1, 1, -1, -1, 1, 1,
+	-1, -1, 1, -1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, -1, 1, -1, 1, -1, 1,
+	-1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 1, -1, 1, 1, 1, -1, -1, 1, -1, -1, -1, 1, 1, 1, -1, -1, -1, -1, -1, -1, -1
+};
 
 /**
  * Frequency domain representation of the short
  * training symbol
  */
-static fftw_complex freq_short_symbol[] = {{0, 0}, {0, 0}, {1,1}, {0, 0}, {0, 0}, {0, 0}, {-1,-1}, {0, 0}, {0, 0}, {0, 0}, {1,1},
-                                              {0, 0}, {0, 0}, {0, 0}, {-1,-1}, {0, 0}, {0, 0}, {0, 0}, {-1,-1}, {0, 0}, {0, 0}, {0, 0},
-                                              {1,1}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {-1,-1}, {0, 0}, {0, 0},
-                                              {0, 0}, {-1,-1}, {0, 0}, {0, 0}, {0, 0}, {1,1}, {0, 0}, {0, 0}, {0, 0}, {1,1}, {0, 0},
-                                              {0, 0}, {0, 0}, {1,1}, {0, 0}, {0, 0}, {0, 0}, {1,1}, {0, 0}, {0, 0}};
+static fftw_complex freq_short_symbol[] = {
+	{0, 0}, {0, 0}, {1, 1}, {0, 0}, {0, 0}, {0, 0}, { -1, -1}, {0, 0}, {0, 0}, {0, 0}, {1, 1},
+	{0, 0}, {0, 0}, {0, 0}, { -1, -1}, {0, 0}, {0, 0}, {0, 0}, { -1, -1}, {0, 0}, {0, 0}, {0, 0},
+	{1, 1}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, {0, 0}, { -1, -1}, {0, 0}, {0, 0},
+	{0, 0}, { -1, -1}, {0, 0}, {0, 0}, {0, 0}, {1, 1}, {0, 0}, {0, 0}, {0, 0}, {1, 1}, {0, 0},
+	{0, 0}, {0, 0}, {1, 1}, {0, 0}, {0, 0}, {0, 0}, {1, 1}, {0, 0}, {0, 0}
+};
 
 /**
  * Frequency domain representation of the long
  * training symbol
  */
-static fftw_complex freq_long_symbol[] = {{1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {1, 0}, {1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0},
-                                             {1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {1, 0}, {1, 0}, {-1, 0},
-                                             {1, 0}, {-1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {0, 0}, {1, 0}, {-1, 0}, {-1, 0},
-                                             {1, 0}, {1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {-1, 0}, {-1, 0},
-                                             {-1, 0}, {1, 0}, {1, 0}, {-1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0}, {-1, 0}, {1, 0},
-                                             {1, 0}, {1, 0}, {1, 0}};
+static fftw_complex freq_long_symbol[] = {
+	{1, 0}, {1, 0}, { -1, 0}, { -1, 0}, {1, 0}, {1, 0}, { -1, 0}, {1, 0}, { -1, 0}, {1, 0},
+	{1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, { -1, 0}, { -1, 0}, {1, 0}, {1, 0}, { -1, 0},
+	{1, 0}, { -1, 0}, {1, 0}, {1, 0}, {1, 0}, {1, 0}, {0, 0}, {1, 0}, { -1, 0}, { -1, 0},
+	{1, 0}, {1, 0}, { -1, 0}, {1, 0}, { -1, 0}, {1, 0}, { -1, 0}, { -1, 0}, { -1, 0}, { -1, 0},
+	{ -1, 0}, {1, 0}, {1, 0}, { -1, 0}, { -1, 0}, {1, 0}, { -1, 0}, {1, 0}, { -1, 0}, {1, 0},
+	{1, 0}, {1, 0}, {1, 0}
+};
 
 /**
  * Time domain representation of the long
  * training symbol
  */
-static fftw_complex time_long_symbol[] = {{0.156250, 0.000000}, {-0.005121, -0.120325}, {0.039750, -0.111158}, {0.096832, 0.082798},
-                                          {0.021112, 0.027886}, {0.059824, -0.087707}, {-0.115131, -0.055180}, {-0.038316, -0.106171},
-                                          {0.097541, -0.025888}, {0.053338, 0.004076}, {0.000989, -0.115005}, {-0.136805, -0.047380},
-                                          {0.024476, -0.058532}, {0.058669, -0.014939}, {-0.022483, 0.160657}, {0.119239, -0.004096},
-                                          {0.062500, -0.062500}, {0.036918, 0.098344}, {-0.057206, 0.039299}, {-0.131263, 0.065227},
-                                          {0.082218, 0.092357}, {0.069557, 0.014122}, {-0.060310, 0.081286}, {-0.056455, -0.021804},
-                                          {-0.035041, -0.150888}, {-0.121887, -0.016566}, {-0.127324, -0.020501}, {0.075074, -0.074040},
-                                          {-0.002806, 0.053774}, {-0.091888, 0.115129}, {0.091717, 0.105872}, {0.012285, 0.097600},
-                                          {-0.156250, 0.000000}, {0.012285, -0.097600}, {0.091717, -0.105872}, {-0.091888, -0.115129},
-                                          {-0.002806, -0.053774}, {0.075074, 0.074040}, {-0.127324, 0.020501}, {-0.121887, 0.016566},
-                                          {-0.035041, 0.150888}, {-0.056455, 0.021804}, {-0.060310, -0.081286}, {0.069557, -0.014122},
-                                          {0.082218, -0.092357}, {-0.131263, -0.065227}, {-0.057206, -0.039299}, {0.036918, -0.098344},
-                                          {0.062500, 0.062500}, {0.119239, 0.004096}, {-0.022483, -0.160657}, {0.058669, 0.014939},
-                                          {0.024476, 0.058532}, {-0.136805, 0.047380}, {0.000989, 0.115005}, {0.053338, -0.004076},
-                                          {0.097541, 0.025888}, {-0.038316, 0.106171}, {-0.115131, 0.055180}, {0.059824, 0.087707},
-                                          {0.021112, -0.027886}, {0.096832, -0.082798}, {0.039750, 0.111158}, {-0.005121, 0.120325}};
-
+static fftw_complex time_long_symbol[] = {
+	{0.156250, 0.000000}, { -0.005121, -0.120325}, {0.039750, -0.111158}, {0.096832, 0.082798},
+	{0.021112, 0.027886}, {0.059824, -0.087707}, { -0.115131, -0.055180}, { -0.038316, -0.106171},
+	{0.097541, -0.025888}, {0.053338, 0.004076}, {0.000989, -0.115005}, { -0.136805, -0.047380},
+	{0.024476, -0.058532}, {0.058669, -0.014939}, { -0.022483, 0.160657}, {0.119239, -0.004096},
+	{0.062500, -0.062500}, {0.036918, 0.098344}, { -0.057206, 0.039299}, { -0.131263, 0.065227},
+	{0.082218, 0.092357}, {0.069557, 0.014122}, { -0.060310, 0.081286}, { -0.056455, -0.021804},
+	{ -0.035041, -0.150888}, { -0.121887, -0.016566}, { -0.127324, -0.020501}, {0.075074, -0.074040},
+	{ -0.002806, 0.053774}, { -0.091888, 0.115129}, {0.091717, 0.105872}, {0.012285, 0.097600},
+	{ -0.156250, 0.000000}, {0.012285, -0.097600}, {0.091717, -0.105872}, { -0.091888, -0.115129},
+	{ -0.002806, -0.053774}, {0.075074, 0.074040}, { -0.127324, 0.020501}, { -0.121887, 0.016566},
+	{ -0.035041, 0.150888}, { -0.056455, 0.021804}, { -0.060310, -0.081286}, {0.069557, -0.014122},
+	{0.082218, -0.092357}, { -0.131263, -0.065227}, { -0.057206, -0.039299}, {0.036918, -0.098344},
+	{0.062500, 0.062500}, {0.119239, 0.004096}, { -0.022483, -0.160657}, {0.058669, 0.014939},
+	{0.024476, 0.058532}, { -0.136805, 0.047380}, {0.000989, 0.115005}, {0.053338, -0.004076},
+	{0.097541, 0.025888}, { -0.038316, 0.106171}, { -0.115131, 0.055180}, {0.059824, 0.087707},
+	{0.021112, -0.027886}, {0.096832, -0.082798}, {0.039750, 0.111158}, { -0.005121, 0.120325}
+};
 
 /**
  * Perform the scrambling of a set of bytes, as mandated by

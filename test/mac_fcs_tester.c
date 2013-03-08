@@ -13,31 +13,31 @@
  */
 int main(int argc, char **argv) {
 
-    if (argc != 2) {
-        printf("error: missing input file\n");
-        return 1;
-    }
+	if (argc != 2) {
+		printf("error: missing input file\n");
+		return 1;
+	}
 
-    //msdu plus mac header loaded from data file
-    char msdu[1000];
+	//msdu plus mac header loaded from data file
+	char msdu[1000];
 
-    //read the psdu from text file
-    int rb = read_hex_from_file(argv[1], msdu, 1000);
+	//read the psdu from text file
+	int rb = read_hex_from_file(argv[1], msdu, 1000);
 
-    if (rb == ERR_CANNOT_READ_FILE) {
-        printf("Cannot read file \"%s\": file not found?\n", argv[1]);
-        return 1;
-    }
-    if (rb == ERR_INVALID_FORMAT) {
-        printf("Invalid file format\n");
-        return 1;
-    }
+	if (rb == ERR_CANNOT_READ_FILE) {
+		printf("Cannot read file \"%s\": file not found?\n", argv[1]);
+		return 1;
+	}
+	if (rb == ERR_INVALID_FORMAT) {
+		printf("Invalid file format\n");
+		return 1;
+	}
 
-    unsigned int fcs = crc32(msdu, rb);
+	unsigned int fcs = crc32(msdu, rb);
 
-    print_hex_array((const char *)&fcs, sizeof(unsigned int), '\n');
-    printf("\n");
+	print_hex_array((const char *)&fcs, sizeof(unsigned int), '\n');
+	printf("\n");
 
-    return 0;
+	return 0;
 
 }
