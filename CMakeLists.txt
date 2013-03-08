@@ -1,6 +1,8 @@
 cmake_minimum_required (VERSION 2.6)
 project(ofdm-modulation)
 
+SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release")
 endif()

@@ -336,13 +336,13 @@ int main(int argc, char **argv) {
 	set_bit(&to_from_ds, 1, get_frame_control_to_ds(header.frame_control, 0));
 	fprintf(stderr, "Address1:\t\t");
 	print_mac_address(header.address1, stderr);
-	fprintf(stderr, " (%s)\n", STR_DATA_ADDRESSES_FUNCTIONALITY[to_from_ds][0]);
+	fprintf(stderr, " (%s)\n", STR_DATA_ADDRESSES_FUNCTIONALITY[(int)to_from_ds][0]);
 	fprintf(stderr, "Address2:\t\t");
 	print_mac_address(header.address2, stderr);
-	fprintf(stderr, " (%s)\n", STR_DATA_ADDRESSES_FUNCTIONALITY[to_from_ds][1]);
+	fprintf(stderr, " (%s)\n", STR_DATA_ADDRESSES_FUNCTIONALITY[(int)to_from_ds][1]);
 	fprintf(stderr, "Address3:\t\t");
 	print_mac_address(header.address3, stderr);
-	fprintf(stderr, " (%s)\n", STR_DATA_ADDRESSES_FUNCTIONALITY[to_from_ds][2]);
+	fprintf(stderr, " (%s)\n", STR_DATA_ADDRESSES_FUNCTIONALITY[(int)to_from_ds][2]);
 	fprintf(stderr, "Frame control field:\t%02hhx%02hhx\n", header.frame_control[0], header.frame_control[1]);
 	print_frame_control_field(header.frame_control, stderr);
 	fprintf(stderr, "Data rate:\t\t%d Mbps\n", data_rate);

@@ -26,7 +26,7 @@
 
 char change_endianness(char b) {
 
-	char o;
+	char o = 0;
 	int i;
 
 	for (i = 0; i <= 7; i++) {

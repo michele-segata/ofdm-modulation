@@ -269,10 +269,10 @@ void modulate(const char *in, int size, enum DATA_RATE data_rate, fftw_complex *
 
 	for (i = 0; i < size * 8; i += p.n_bpsc) {
 
-		char in_i, in_q;
+		int in_i, in_q;
 
-		in_i = get_bit_group_value(in, size, i, max(p.n_bpsc / 2, 1));
-		in_q = get_bit_group_value(in, size, i + p.n_bpsc / 2, max(p.n_bpsc / 2, 1));
+		in_i = (int)get_bit_group_value(in, size, i, max(p.n_bpsc / 2, 1));
+		in_q = (int)get_bit_group_value(in, size, i + p.n_bpsc / 2, max(p.n_bpsc / 2, 1));
 
 		idx = i / p.n_bpsc;
 
@@ -810,15 +810,11 @@ void generate_data_field(const char *psdu, int length, enum DATA_RATE data_rate,
 	int n_sym;
 	//number of bits of the data field
 	int n_data;
-	//number of bits of the padding
-	int n_pad;
 
 	//compute number of symbols (17-11)
 	n_sym = (int)ceil((16 + 8 * length + 6) / (double)params.n_dbps);
 	//compute number of bits of the data field (17-12)
 	n_data = n_sym * params.n_dbps;
-	//compute number of padding bits (17-13)
-	n_pad = n_data - (16 + 8 * length + 6);
 
 	//alloc data
 	*data_length = n_data / 8;

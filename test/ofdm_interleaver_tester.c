@@ -21,8 +21,6 @@ int main(int argc, char **argv) {
 	char encoded_psdu[1000];
 	//ofdm encoding parameters
 	struct OFDM_PARAMETERS params = get_ofdm_parameter(BW_20_DR_36_MBPS);
-	//transmission parameters
-	struct TX_PARAMETERS tx_params;
 	//encoded data field
 	char *interleaved_data;
 
@@ -37,9 +35,6 @@ int main(int argc, char **argv) {
 		printf("Invalid file format\n");
 		return 1;
 	}
-
-	//the size of the psdu in the 802.11-2012 example is 100 bytes
-	tx_params = get_tx_parameters(params.data_rate, 100);
 
 	//after interleaving, the size is the same after encoding
 	interleaved_data = (char *)calloc(rb, sizeof(char));

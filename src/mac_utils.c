@@ -145,9 +145,6 @@ struct MAC_DATAFRAME_HEADER generate_default_mac_header() {
 
 	struct MAC_DATAFRAME_HEADER hdr;
 
-	//frame check sequence
-	unsigned int fcs;
-
 	dbyte frame_control;
 	dbyte duration;
 
@@ -182,7 +179,7 @@ void generate_mac_data_frame(const char *msdu, int msdu_size, struct MAC_DATAFRA
 
 void print_frame_control_field(dbyte frame_control, FILE *f) {
 
-	char type, subtype;
+	int type, subtype;
 	dbyte fc;
 
 	//copy frame control and swap endianness. MAC format is LSB to MSB
@@ -191,9 +188,9 @@ void print_frame_control_field(dbyte frame_control, FILE *f) {
 
 	fprintf(f, "MAC control field:\n");
 	fprintf(f, "\tProtocol version: \t%x\n", get_bit_group_value(fc, 2, 0, 2));
-	type = get_bit_group_value(fc, 2, 2, 2);
+	type = (int)get_bit_group_value(fc, 2, 2, 2);
 	fprintf(f, "\tFrame type: \t\t%s\n", STR_FC_TYPE[type]);
-	subtype = get_bit_group_value(fc, 2, 4, 4);
+	subtype = (int)get_bit_group_value(fc, 2, 4, 4);
 	fprintf(f, "\tFrame subtype: \t\t");
 	switch (type) {
 		case TYPE_DATA:

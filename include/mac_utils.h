@@ -24,6 +24,8 @@
 
 #include "bit_utils.h"
 
+#include <stddef.h>
+
 /**
  * Define a IEEE 802 48 bits MAC address
  */
@@ -429,5 +431,13 @@ char get_frame_control_protected_frame(dbyte frame_control, int lsb);
  */
 void set_frame_control_order(dbyte *frame_control, char order, int lsb);
 char get_frame_control_order(dbyte frame_control, int lsb);
+
+/**
+ * Computes the crc32 for a set of bytes
+ *
+ * \param buf bytes for which crc must be computed
+ * \param len size of buf in bytes
+ */
+unsigned int crc32(const char *buf, size_t len);
 
 #endif /* MAC_UTILS_H_ */
