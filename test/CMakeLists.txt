@@ -7,21 +7,21 @@ project (ofdm-modulation)
 #endif (FFTW_FOUND)
 
 # DATA field tester
-add_executable(ofdm_data_tester ofdm_data_tester.c)
+add_executable(ofdm_data_tester ofdm_data_tester.cpp)
 # scrambler tester
-add_executable(ofdm_scrambler_tester ofdm_scrambler_tester.c)
+add_executable(ofdm_scrambler_tester ofdm_scrambler_tester.cpp)
 # convolutional encoder tester
-add_executable(ofdm_convolutional_encoder_tester ofdm_convolutional_encoder_tester.c)
+add_executable(ofdm_convolutional_encoder_tester ofdm_convolutional_encoder_tester.cpp)
 # interleaver tester
-add_executable(ofdm_interleaver_tester ofdm_interleaver_tester.c)
+add_executable(ofdm_interleaver_tester ofdm_interleaver_tester.cpp)
 # mapper tester
-add_executable(ofdm_mapper_tester ofdm_mapper_tester.c)
+add_executable(ofdm_mapper_tester ofdm_mapper_tester.cpp)
 # whole ofdm encoding procedure test
-add_executable(ofdm_tester ofdm_tester.c)
+add_executable(ofdm_tester ofdm_tester.cpp)
 # MAC framer tester
 add_executable(mac_frame_tester mac_frame_tester)
 # mac frame check sequence tester
-add_executable(mac_fcs_tester mac_fcs_tester.c)
+add_executable(mac_fcs_tester mac_fcs_tester.cpp)
 
 target_link_libraries(ofdm_data_tester ofdm_lib ${LIBS})
 target_link_libraries(ofdm_scrambler_tester ofdm_lib ${LIBS})

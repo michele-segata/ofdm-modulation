@@ -11,6 +11,6 @@ project (ofdm-modulation)
 # set(LIBS ${LIBS} ${EFENCE_LIBRARY})
 
 # MAC plus OFDM frame generator
-add_executable(mac_ofdm_framer mac_ofdm_framer.c)
+add_executable(mac_ofdm_framer mac_ofdm_framer.cpp)
 
 target_link_libraries(mac_ofdm_framer ofdm_lib ${LIBS})
