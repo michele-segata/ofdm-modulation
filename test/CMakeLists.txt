@@ -10,6 +10,8 @@ project (ofdm-modulation)
 add_executable(ofdm_data_tester ofdm_data_tester.cpp)
 # scrambler tester
 add_executable(ofdm_scrambler_tester ofdm_scrambler_tester.cpp)
+# descrambler tester
+add_executable(ofdm_descrambler_tester ofdm_descrambler_tester.cpp)
 # convolutional encoder tester
 add_executable(ofdm_convolutional_encoder_tester ofdm_convolutional_encoder_tester.cpp)
 # interleaver tester
@@ -25,6 +27,7 @@ add_executable(mac_fcs_tester mac_fcs_tester.cpp)
 
 target_link_libraries(ofdm_data_tester ofdm_lib ${LIBS})
 target_link_libraries(ofdm_scrambler_tester ofdm_lib ${LIBS})
+target_link_libraries(ofdm_descrambler_tester ofdm_lib ${LIBS})
 target_link_libraries(ofdm_convolutional_encoder_tester ofdm_lib ${LIBS})
 target_link_libraries(ofdm_interleaver_tester ofdm_lib ${LIBS})
 target_link_libraries(ofdm_mapper_tester ofdm_lib ${LIBS})

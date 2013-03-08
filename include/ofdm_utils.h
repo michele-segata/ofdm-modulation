@@ -254,6 +254,16 @@ void scramble(const char *in, char *out, int size);
 void scramble_with_initial_state(const char *in, char *out, int size, char initial_state);
 
 /**
+ * Perform de-scrambling of a set of bytes.
+ *
+ * \param in array of bytes to be de-scrambled
+ * \param out array of bytes where to store de-scrambled bits
+ * \param size size of in and out arrays
+ * \param initial_state initial state of the 7-bit shift register
+ */
+void descramble(const char *in, char *out, int size, char initial_state);
+
+/**
  * Set to 0 the TAIL bits AFTER the scrambling has been
  * performed, as indicated in 802.11-2007, 17.3.5.2.
  *

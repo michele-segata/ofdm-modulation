@@ -56,6 +56,7 @@ enable_testing()
 
 add_test(data_field_tester            ../test/tester.sh build/ofdm_data_tester                  "misc/psdu-2012.hex"               "misc/data-2012.bits")
 add_test(scrambler_tester             ../test/tester.sh build/ofdm_scrambler_tester             "misc/psdu-2012.hex"               "misc/scrambled-2012.bits")
+add_test(descrambler_tester           ../test/tester.sh build/ofdm_descrambler_tester           "misc/scrambled-2012.bits"         "misc/psdu-2012.bits")
 add_test(convolutional_encoder_tester ../test/tester.sh build/ofdm_convolutional_encoder_tester "misc/scrambled-2012.bits"         "misc/encoded_3_4-2012.bits")
 add_test(interleaver_tester           ../test/tester.sh build/ofdm_interleaver_tester           "misc/encoded_3_4-first-2012.bits" "misc/interleaved-first-2012.bits")
 add_test(mapper_tester                ../test/tester.sh build/ofdm_mapper_tester                "misc/interleaved-first-2012.bits" "misc/mapped-first-2012.complex")

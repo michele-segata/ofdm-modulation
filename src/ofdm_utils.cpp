@@ -68,6 +68,11 @@ void scramble_with_initial_state(const char *in, char *out, int size, char initi
 
 }
 
+void descramble(const char *in, char *out, int size, char initial_state) {
+	//descrambling is simple!
+	scramble_with_initial_state(in, out, size, initial_state);
+}
+
 void reset_tail_bits(char *scrambled_data, int size, int n_pad) {
 
 	//index of the first bit of the TAIL field
